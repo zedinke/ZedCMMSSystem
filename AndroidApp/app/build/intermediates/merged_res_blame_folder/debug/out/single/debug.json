@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "com.artence.cmms.app-merged_res-87:/xml_data_extraction_rules.xml.flat",
+        "source": "com.artence.cmms.app-main-89:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "com.artence.cmms.app-merged_res-87:/xml_backup_rules.xml.flat",
+        "source": "com.artence.cmms.app-main-89:/xml/backup_rules.xml"
+    }
+]

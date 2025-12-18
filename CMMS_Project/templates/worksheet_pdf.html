@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ doc_title }} - {{ doc_code }}</title>
+  <style>
+    @page { size: A4; margin: 18mm 16mm; }
+    body { font-family: Arial, sans-serif; color: #1f2933; font-size: 11pt; }
+    h1 { font-size: 16pt; margin: 0 0 4mm 0; letter-spacing: 0.2mm; }
+    h2 { font-size: 13pt; margin: 10mm 0 3mm 0; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 5mm; }
+    th, td { border: 1px solid #c7ced3; padding: 6px 8px; text-align: left; }
+    th { background: #f1f4f6; font-weight: 600; }
+    .meta { font-size: 10pt; color: #4b5563; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
+    .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; background: #e5eef7; border: 1px solid #c7d7ed; font-weight: 600; }
+    .section { margin-top: 6mm; }
+    .signature { height: 28mm; border: 1px dashed #c7ced3; padding: 6px; }
+    .muted { color: #6b7280; }
+  </style>
+</head>
+<body>
+  <header style="border-bottom: 2px solid #1f2933; padding-bottom: 4mm; margin-bottom: 6mm;">
+    <div style="display:flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <h1>{{ doc_title }}</h1>
+        <div class="meta">Dokumentum azonosító: {{ doc_code }} &nbsp;|&nbsp; Verzió: {{ version }}</div>
+        <div class="meta">Generálva: {{ generated_at }} &nbsp;|&nbsp; Készítette: {{ generated_by }}</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="badge">ISO 9001 - Nyomonkövetés</div>
+        <div class="meta">Oldal: 1 / {{ page_count if page_count is defined else '1' }}</div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section">
+    <h2>Nyomonkövethetőségi adatok</h2>
+    <div class="grid">
+      <div><strong>Munkalap azonosító:</strong> {{ worksheet.id }}</div>
+      <div><strong>Státusz:</strong> {{ worksheet.status }}</div>
+      <div><strong>Létrehozva:</strong> {{ worksheet.created_at.strftime('%Y-%m-%d %H:%M') if worksheet.created_at else '-' }}</div>
+      <div><strong>Hiba kezdete:</strong> {{ breakdown_time }}</div>
+      <div><strong>Javítás befejezése:</strong> {{ repair_finished_time }}</div>
+      <div><strong>Leállási idő:</strong> {{ downtime }}</div>
+      <div><strong>Felelős:</strong> {{ assigned_user.username if assigned_user else '-' }}</div>
+      <div><strong>Generálta:</strong> {{ generated_by }}</div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Berendezés adatai</h2>
+    <div class="grid">
+      <div><strong>Gép:</strong> {{ machine.name if machine else '-' }}</div>
+      <div><strong>Gyári szám:</strong> {{ machine.serial_number if machine and machine.serial_number else '-' }}</div>
+      <div><strong>Gyártó / Modell:</strong> {{ (machine.manufacturer ~ ' ' ~ machine.model) if machine and machine.model else (machine.manufacturer if machine else '-') }}</div>
+      <div><strong>Termelési vonal:</strong> {{ machine.production_line.name if machine and machine.production_line else '-' }}</div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Megjegyzések / Hiba leírás</h2>
+    <div style="border:1px solid #c7ced3; padding:8px; min-height:24mm;">
+      {{ notes }}
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Felhasznált alkatrészek</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>SKU</th>
+          <th>Megnevezés</th>
+          <th>Mennyiség</th>
+          <th>Egységköltség</th>
+          <th>Összköltség</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if parts and parts|length > 0 %}
+          {% for p in parts %}
+            <tr>
+              <td>{{ p.sku }}</td>
+              <td>{{ p.name }}</td>
+              <td>{{ p.qty }}</td>
+              <td>{{ '%.2f'|format(p.unit_cost) }} </td>
+              <td>{{ '%.2f'|format(p.total_cost) }}</td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="5" class="muted">Nincs felhasznált alkatrész</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h2>Aláírások és jóváhagyás</h2>
+    <div class="grid" style="grid-template-columns: 1fr 1fr 1fr;">
+      <div class="signature">
+        <div><strong>Elvégezte</strong></div>
+        <div class="muted">Név, dátum, aláírás</div>
+      </div>
+      <div class="signature">
+        <div><strong>Ellenőrizte</strong></div>
+        <div class="muted">Név, dátum, aláírás</div>
+      </div>
+      <div class="signature">
+        <div><strong>Jóváhagyta</strong></div>
+        <div class="muted">Név, dátum, aláírás</div>
+      </div>
+    </div>
+  </section>
+
+  <footer style="border-top:1px solid #c7ced3; margin-top:10mm; padding-top:3mm; font-size:9pt; color:#6b7280;">
+    Ez a dokumentum ISO 9001:2015 követelmények szerint készült. | Automatikusan generált munkalap PDF.
+  </footer>
+</body>
+</html>

@@ -1,0 +1,189 @@
+ZED CMMS SYSTEM - GDPR ADATVÉDELMI NYILATKOZAT
+================================================
+
+Ez a dokumentum az adatvédelmi szabályzatot és a GDPR megfelelőséget tartalmazza.
+
+1. ADATKEZELÉSI TÁJÉKOZTATÓ
+
+1.1. Adatkezelő
+   - Név: Geleta Ákos
+   - Email: geleako@gmail.com
+   - Cím: [Cím]
+
+1.2. Adatkezelés célja
+   A Zed CMMS System a következő célokra kezeli az adatokat:
+   - Felhasználói fiókok kezelése
+   - Karbantartási munkalapok nyilvántartása
+   - Eszközök és alkatrészek készletkezelése
+   - Műszaki dokumentáció tárolása
+   - Jelentések és statisztikák generálása
+   - Megfelelőségi naplózás
+
+1.3. Kezelt adatok
+   - Felhasználói adatok (név, email, felhasználónév)
+   - Munkalapok és karbantartási információk
+   - Eszközök és alkatrészek adatai
+   - Készletmozgások és tranzakciók
+   - Rendszerhasználati naplók
+   - Dokumentumok és fájlok
+
+1.4. Adatkezelés jogalapja
+   - Felhasználói hozzájárulás
+   - Munkavégzéshez szükséges adatkezelés
+   - Jogszabályi kötelezettség teljesítése
+
+1.5. Adatok tárolási ideje
+   - Felhasználói adatok: a fiók törléséig
+   - Munkalapok: 10 év
+   - Készletmozgások: 7 év
+   - Naplók: 5 év (archiválva), majd törlés
+
+1.6. Adattovábbítás
+   Az adatok nem kerülnek továbbításra harmadik félnek, kivéve:
+   - Jogszabályi kötelezettség teljesítése esetén
+   - Felhasználó kifejezett hozzájárulásával
+
+1.7. Adatvédelmi jogok
+   A felhasználók a következő jogokkal rendelkeznek:
+   - Hozzáférési jog
+   - Helyesbítési jog
+   - Törlési jog ("elfeledtetéshez való jog")
+   - Adatkezelés korlátozásának joga
+   - Adathordozhatósági jog
+   - Tiltakozási jog
+
+1.8. Adatvédelmi incidensek
+   Adatvédelmi incidens esetén a felhasználókat 72 órán belül értesítjük.
+
+1.9. Kapcsolatfelvétel
+   Adatvédelmi kérdések esetén: geleako@gmail.com
+
+2. TECHNIKAI ADATVÉDELEM
+
+2.1. Biztonsági intézkedések
+   - Jelszavak bcrypt hasheléssel tárolva
+   - HTTPS kapcsolat az adatbázis elérésekor
+   - Rendszeres biztonsági mentések
+   - Hozzáférés-vezérlés és szerepkör-alapú jogosultságok
+   - Naplózás minden kritikus műveletről
+
+2.2. Adatbázis biztonság
+   - MySQL adatbázis titkosított kapcsolattal
+   - Rendszeres biztonsági mentések
+   - Hozzáférési naplózás
+
+2.3. Fájlok biztonsága
+   - Dokumentumok és képek biztonságos tárolása
+   - Hozzáférés-vezérlés fájlokhoz
+   - Rendszeres biztonsági mentések
+
+3. GDPR MEGFELELŐSÉG
+
+A rendszer megfelel a következő szabályozásoknak:
+- GDPR (EU 2016/679)
+- Magyarország adatvédelmi törvénye
+- ISO 27001 információbiztonsági szabvány
+
+4. VÁLTOZÁSOK
+
+Ez a dokumentum változhat. A jelentős változásokról értesítjük a felhasználókat.
+
+Utolsó frissítés: 2025. január
+
+---
+
+ZED CMMS SYSTEM - GDPR PRIVACY STATEMENT
+=========================================
+
+This document contains the privacy policy and GDPR compliance information.
+
+1. DATA PROCESSING INFORMATION
+
+1.1. Data Controller
+   - Name: Geleta Ákos
+   - Email: geleako@gmail.com
+   - Address: [Address]
+
+1.2. Purpose of Data Processing
+   The Zed CMMS System processes data for the following purposes:
+   - User account management
+   - Maintenance worksheet records
+   - Equipment and parts inventory management
+   - Technical documentation storage
+   - Report and statistics generation
+   - Compliance logging
+
+1.3. Processed Data
+   - User data (name, email, username)
+   - Worksheets and maintenance information
+   - Equipment and parts data
+   - Inventory movements and transactions
+   - System usage logs
+   - Documents and files
+
+1.4. Legal Basis for Data Processing
+   - User consent
+   - Data processing necessary for work performance
+   - Fulfillment of legal obligations
+
+1.5. Data Retention Period
+   - User data: until account deletion
+   - Worksheets: 10 years
+   - Inventory movements: 7 years
+   - Logs: 5 years (archived), then deletion
+
+1.6. Data Transfer
+   Data is not transferred to third parties, except:
+   - When required by law
+   - With explicit user consent
+
+1.7. Data Protection Rights
+   Users have the following rights:
+   - Right of access
+   - Right to rectification
+   - Right to erasure ("right to be forgotten")
+   - Right to restriction of processing
+   - Right to data portability
+   - Right to object
+
+1.8. Data Protection Incidents
+   In case of a data protection incident, users will be notified within 72 hours.
+
+1.9. Contact
+   For data protection questions: geleako@gmail.com
+
+2. TECHNICAL DATA PROTECTION
+
+2.1. Security Measures
+   - Passwords stored with bcrypt hashing
+   - HTTPS connection for database access
+   - Regular security backups
+   - Access control and role-based permissions
+   - Logging of all critical operations
+
+2.2. Database Security
+   - MySQL database with encrypted connection
+   - Regular security backups
+   - Access logging
+
+2.3. File Security
+   - Secure storage of documents and images
+   - Access control for files
+   - Regular security backups
+
+3. GDPR COMPLIANCE
+
+The system complies with the following regulations:
+- GDPR (EU 2016/679)
+- Hungary's data protection law
+- ISO 27001 information security standard
+
+4. CHANGES
+
+This document may change. Users will be notified of significant changes.
+
+Last updated: January 2025
+
+
+
+

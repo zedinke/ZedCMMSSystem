@@ -1,0 +1,71 @@
+# CMMS Audit Test Suite Requirements
+# Python packages required for running comprehensive audit tests
+
+# Testing framework
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-html>=3.2.0
+pytest-timeout>=2.1.0
+unittest-xml-reporting>=3.2.0
+
+# API testing
+requests>=2.31.0
+requests-mock>=1.11.0
+
+# Database testing
+sqlalchemy>=2.0.0
+alembic>=1.12.0
+
+# Security testing
+bandit>=1.7.5  # Security linter
+safety>=2.3.5  # Dependency vulnerability scanner
+
+# Performance testing
+locust>=2.15.0  # Load testing
+memory-profiler>=0.61.0
+
+# Reporting
+jinja2>=3.1.2
+weasyprint>=59.0  # PDF generation
+openpyxl>=3.1.2  # Excel reports
+pandas>=2.0.0
+
+# Utilities
+python-dotenv>=1.0.0
+pyyaml>=6.0
+colorama>=0.4.6  # Colored terminal output
+tabulate>=0.9.0  # Pretty tables
+
+# Logging & monitoring
+loguru>=0.7.0
+
+# Code quality
+pylint>=2.17.0
+flake8>=6.0.0
+mypy>=1.4.0
+
+# JSON/YAML validation
+jsonschema>=4.18.0
+pydantic>=2.0.0
+
+# Date/time utilities
+python-dateutil>=2.8.2
+
+# HTTP/API utilities
+httpx>=0.24.0  # Modern HTTP client
+aiohttp>=3.8.0  # Async HTTP
+
+# Mocking & fixtures
+faker>=19.0.0  # Test data generation
+factory-boy>=3.3.0
+
+# Coverage & reporting
+coverage>=7.3.0
+
+# Optional: Android testing (if needed)
+# appium-python-client>=2.11.0
+
+# Optional: Selenium for UI testing
+# selenium>=4.11.0
+# webdriver-manager>=3.9.0
+

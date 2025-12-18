@@ -1,0 +1,84 @@
+╔═══════════════════════════════════════════════════════════════╗
+║   CMMS Android App - Build és Backend integráció KÉSZ!       ║
+╚═══════════════════════════════════════════════════════════════╝
+
+✅ SIKERES BUILDELÉS
+   • Gradle build: BUILD SUCCESSFUL
+   • APK telepítve az AVD-re
+   • Minden fordítási hiba javítva
+
+✅ BACKEND INTEGRÁCIÓ
+   • Backend URL: http://116.203.226.140:8000/api/
+   • Login endpoint: /api/v1/auth/login
+   • Cleartext HTTP engedélyezve
+   • Token-alapú autentikáció implementálva
+
+✅ DIAGNOSZTIKAI ESZKÖZÖK
+   • "Test Server" gomb a login képernyőn
+   • DNS, kapcsolódás és endpoint tesztek
+   • Részletes log-olás minden hálózati hívásnál
+
+✅ DOKUMENTÁCIÓ
+   • API_ENDPOINTS_REQUIRED.md - Teljes API spec
+   • CURRENT_STATUS.md - Aktuális állapot és troubleshooting
+   • TESTING_GUIDE.md - Lépésről-lépésre tesztelési útmutató
+   • README.md frissítve
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 KÖVETKEZŐ LÉPÉSEK (TŐLED):
+
+1. Nyisd meg az emulátort
+2. Indítsd el a CMMS appot
+3. Nyomd meg a "Test Server" gombot
+4. Nézd meg a diagnosztikai eredményeket
+
+Ha mindhárom teszt zöld (401 is jó a login endpoint-nál):
+   → Próbáld ki a logint: a.geleta / Gele007ta
+
+Ha van hibaüzenet:
+   → Másold be ide, és azonnal javítom!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 AMIT JAVÍTOTTAM (összesen):
+
+Fájlok módosítva/létrehozva: 9
+• AppModule.kt - Token lekérés javítása (Flow → first())
+• CreateInventoryViewModel.kt - 'name' paraméter hozzáadása
+• CreateInventoryScreen.kt - UI name mező hozzáadása
+• AuthApi.kt - Login endpoint /v1/auth/login-re javítva
+• LoginViewModel.kt - Részletes log-olás
+• AuthRepository.kt - Diagnosztika és részletes hibakezelés
+• LoginScreen.kt - "Test Server" gomb hozzáadva
+• DiagnosticsUtil.kt - Új utility osztály (DNS/szerver/endpoint teszt)
+• 4 új dokumentáció (API, Status, Testing Guide, README update)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 GYORS HIBAELHÁRÍTÁS:
+
+Probléma: Homokóra örökké pörög
+→ Megoldás: "Test Server" gomb megmutatja a pontos okot
+
+Probléma: "Login failed: 401"
+→ Ok: Jelszó nem egyezik a backend-del
+→ Ellenőrizd: Adatbázisban a jelszó hash helyes-e
+
+Probléma: "Login failed: 404"
+→ Ok: Endpoint nem létezik a backend-en
+→ Ellenőrizd: /api/v1/auth/login útvonal létezik-e
+
+Probléma: "Connection refused"
+→ Ok: Backend szerver nem fut
+→ Ellenőrizd: http://116.203.226.140:8000/api/health/
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Az app KÉSZ a tesztelésre!
+
+Nyisd meg az emulátort és nyomd meg a "Test Server" gombot,
+majd küldd be az eredményt → folytatom a munkát szükség szerint.
+
+╚═══════════════════════════════════════════════════════════════╝
+

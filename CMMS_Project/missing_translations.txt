@@ -1,0 +1,6 @@
+Missing in HU:
+  auth.permissions.hierarchical_access
+
+Missing in EN:
+  permissions
+  permissions.hierarchical_access

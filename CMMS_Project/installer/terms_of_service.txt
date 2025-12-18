@@ -1,0 +1,225 @@
+ZED CMMS SYSTEM - ÁLTALÁNOS FELHASZNÁLÁSI FELTÉTELEK
+====================================================
+
+Ez a dokumentum a Zed CMMS System használatának általános feltételeit tartalmazza.
+
+1. ÁLTALÁNOS INFORMÁCIÓK
+
+1.1. Szolgáltatás
+   A Zed CMMS System egy Computerized Maintenance Management System (CMMS),
+   amely karbantartási munkalapok, eszközök, alkatrészek és készletkezelés
+   kezelésére szolgál.
+
+1.2. Szolgáltató
+   - Név: Geleta Ákos
+   - Email: geleako@gmail.com
+   - Tulajdonos: Geleta Ákos
+
+1.3. Verzió
+   Jelenlegi verzió: 1.0.0
+
+2. FELHASZNÁLÁSI FELTÉTELEK
+
+2.1. Elfogadás
+   A szoftver telepítésével és használatával a felhasználó elfogadja ezeket
+   a feltételeket.
+
+2.2. Használati jog
+   - A szoftver licencelt, nem szabadon terjeszthető
+   - Csak a licencelt felhasználók használhatják
+   - Tilos a szoftver módosítása, fordított fejlesztése vagy másolása
+   - Tilos a szoftver továbbértékesítése vagy terjesztése
+
+2.3. Felhasználói fiókok
+   - Minden felhasználónak saját fiókkal kell rendelkeznie
+   - A jelszavakat biztonságosan kell kezelni
+   - Tilos a fiókok megosztása vagy mások fiókjainak használata
+   - A felhasználó felelős a fiókja biztonságáért
+
+2.4. Adatok kezelése
+   - A felhasználó felelős az általa bevitt adatok pontosságáért
+   - Rendszeres biztonsági mentések ajánlottak
+   - A szolgáltató nem vállal felelősséget az adatvesztésért
+
+2.5. Hozzáférés és jogosultságok
+   - A rendszergazda határozza meg a felhasználói jogosultságokat
+   - A felhasználók csak a saját jogosultságaik szerint használhatják a rendszert
+   - Tilos jogosulatlan hozzáférés vagy adatmanipuláció
+
+3. FELELŐSSÉG
+
+3.1. Szolgáltató felelőssége
+   - A szolgáltató biztosítja a szoftver működését
+   - Rendszeres frissítéseket biztosít
+   - Technikai támogatást nyújt
+
+3.2. Felhasználó felelőssége
+   - A felhasználó felelős a szoftver megfelelő használatáért
+   - Felelős az általa bevitt adatokért
+   - Felelős a biztonsági mentések készítéséért
+   - Felelős a jelszavak biztonságos kezeléséért
+
+3.3. Kizárások
+   A szolgáltató nem vállal felelősséget:
+   - Adatvesztésért vagy adatsérülésért
+   - Közvetett vagy következményes károkért
+   - Harmadik fél által okozott károkért
+   - A szoftver nem megfelelő használatából eredő károkért
+
+4. ADATVÉDELEM
+
+4.1. Adatkezelés
+   Az adatkezelésről részletesen az Adatvédelmi Nyilatkozatban (GDPR)
+   tájékoztatjuk.
+
+4.2. Adatok biztonsága
+   - A rendszer biztonsági intézkedéseket alkalmaz
+   - A jelszavak titkosítva tárolódnak
+   - Rendszeres biztonsági mentések készülnek
+
+5. TÁMOGATÁS ÉS KARBANTARTÁS
+
+5.1. Frissítések
+   - A szolgáltató rendszeres frissítéseket biztosít
+   - A frissítések automatikusan vagy manuálisan telepíthetők
+   - A felhasználóknak ajánlott a legfrissebb verzió használata
+
+5.2. Technikai támogatás
+   - Email: geleako@gmail.com
+   - Támogatás munkanapokon, ügyfélfogadási időben
+
+5.3. Karbantartás
+   - A szolgáltató időszakos karbantartást végezhet
+   - A karbantartásról előzetesen értesítjük a felhasználókat
+
+6. VÉGSŐ RENDELKEZÉSEK
+
+6.1. Módosítások
+   Ezek a feltételek változhatnak. A jelentős változásokról értesítjük
+   a felhasználókat.
+
+6.2. Végrehajtás
+   A feltételek megsértése esetén a szolgáltató felfüggesztheti vagy
+   megszüntetheti a felhasználói fiókot.
+
+6.3. Jogviták
+   A jogvitákat magyar törvények szerint kell megoldani.
+
+6.4. Kapcsolatfelvétel
+   Kérdések esetén: geleako@gmail.com
+
+Utolsó frissítés: 2025. január
+
+---
+
+ZED CMMS SYSTEM - TERMS OF SERVICE
+===================================
+
+This document contains the general terms of use for the Zed CMMS System.
+
+1. GENERAL INFORMATION
+
+1.1. Service
+   The Zed CMMS System is a Computerized Maintenance Management System (CMMS)
+   designed for managing maintenance worksheets, equipment, parts, and inventory.
+
+1.2. Provider
+   - Name: Geleta Ákos
+   - Email: geleako@gmail.com
+   - Owner: Geleta Ákos
+
+1.3. Version
+   Current version: 1.0.0
+
+2. TERMS OF USE
+
+2.1. Acceptance
+   By installing and using the software, the user accepts these terms.
+
+2.2. Usage Rights
+   - The software is licensed, not freely distributable
+   - Only licensed users may use it
+   - Modification, reverse engineering, or copying is prohibited
+   - Resale or distribution is prohibited
+
+2.3. User Accounts
+   - Each user must have their own account
+   - Passwords must be handled securely
+   - Sharing accounts or using others' accounts is prohibited
+   - Users are responsible for their account security
+
+2.4. Data Management
+   - Users are responsible for the accuracy of data they enter
+   - Regular backups are recommended
+   - The provider is not liable for data loss
+
+2.5. Access and Permissions
+   - The administrator determines user permissions
+   - Users may only use the system according to their permissions
+   - Unauthorized access or data manipulation is prohibited
+
+3. LIABILITY
+
+3.1. Provider Liability
+   - The provider ensures software functionality
+   - Provides regular updates
+   - Offers technical support
+
+3.2. User Liability
+   - Users are responsible for proper software use
+   - Responsible for data they enter
+   - Responsible for creating backups
+   - Responsible for secure password management
+
+3.3. Exclusions
+   The provider is not liable for:
+   - Data loss or corruption
+   - Indirect or consequential damages
+   - Damages caused by third parties
+   - Damages resulting from improper software use
+
+4. DATA PROTECTION
+
+4.1. Data Processing
+   Data processing is detailed in the Privacy Statement (GDPR).
+
+4.2. Data Security
+   - The system applies security measures
+   - Passwords are stored encrypted
+   - Regular security backups are created
+
+5. SUPPORT AND MAINTENANCE
+
+5.1. Updates
+   - The provider offers regular updates
+   - Updates can be installed automatically or manually
+   - Users are recommended to use the latest version
+
+5.2. Technical Support
+   - Email: geleako@gmail.com
+   - Support on weekdays, during business hours
+
+5.3. Maintenance
+   - The provider may perform periodic maintenance
+   - Users will be notified in advance of maintenance
+
+6. FINAL PROVISIONS
+
+6.1. Changes
+   These terms may change. Users will be notified of significant changes.
+
+6.2. Enforcement
+   In case of violation of terms, the provider may suspend or terminate
+   the user account.
+
+6.3. Disputes
+   Disputes must be resolved according to Hungarian law.
+
+6.4. Contact
+   For questions: geleako@gmail.com
+
+Last updated: January 2025
+
+
+
+

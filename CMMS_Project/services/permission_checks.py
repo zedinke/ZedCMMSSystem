@@ -1,0 +1,20 @@
+"""
+Convenience wrappers for permission keys
+"""
+
+# Permission keys used across the app
+CAN_EDIT_INVENTORY = "can_edit_inventory"
+CAN_VIEW_INVENTORY = "can_view_inventory"
+CAN_EDIT_ASSETS = "can_edit_assets"
+CAN_VIEW_ASSETS = "can_view_assets"
+CAN_EDIT_WORKSHEETS = "can_edit_worksheets"
+CAN_CREATE_WORKSHEETS = "can_create_worksheets"
+CAN_EDIT_OWN_WORKSHEETS = "can_edit_own_worksheets"
+CAN_VIEW_WORKSHEETS = "can_view_worksheets"
+CAN_DELETE_WORKSHEETS = "can_delete_worksheets"
+CAN_EDIT_PM_TASKS = "can_edit_pm_tasks"
+CAN_VIEW_PM_TASKS = "can_view_pm_tasks"
+CAN_EXECUTE_PM_TASKS = "can_execute_pm_tasks"
+CAN_VIEW_REPORTS = "can_view_reports"
+CAN_MANAGE_USERS = "can_manage_users"
+CAN_BACKUP = "can_backup"

@@ -1,0 +1,595 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.artence.cmms"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="26"
+9        android:targetSdkVersion="34" />
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:5:5-67
+11-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:5:22-64
+12
+13    <queries>
+13-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:7:5-13:15
+14        <intent>
+14-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:8:9-12:18
+15            <action android:name="android.intent.action.CREATE_DOCUMENT" />
+15-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:9:13-76
+15-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:9:21-73
+16
+17            <data android:mimeType="*/*" />
+17-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:11:13-44
+17-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:11:19-41
+18        </intent>
+19    </queries>
+20
+21    <uses-permission
+21-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:15:5-17:38
+22        android:name="android.permission.WAKE_LOCK"
+22-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:16:9-52
+23        android:maxSdkVersion="25" />
+23-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:17:9-35
+24    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+24-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:18:5-77
+24-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:18:22-74
+25    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+25-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:24:5-79
+25-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:24:22-76
+26    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+26-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:25:5-81
+26-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:25:22-78
+27    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+27-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:26:5-77
+27-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:26:22-74
+28
+29    <permission
+29-->[androidx.core:core:1.13.1] C:\Users\gelea\.gradle\caches\8.13\transforms\41a4535204a61c2d2d641573e2d3ac84\transformed\core-1.13.1\AndroidManifest.xml:22:5-24:47
+30        android:name="com.artence.cmms.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+30-->[androidx.core:core:1.13.1] C:\Users\gelea\.gradle\caches\8.13\transforms\41a4535204a61c2d2d641573e2d3ac84\transformed\core-1.13.1\AndroidManifest.xml:23:9-81
+31        android:protectionLevel="signature" />
+31-->[androidx.core:core:1.13.1] C:\Users\gelea\.gradle\caches\8.13\transforms\41a4535204a61c2d2d641573e2d3ac84\transformed\core-1.13.1\AndroidManifest.xml:24:9-44
+32
+33    <uses-permission android:name="com.artence.cmms.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" /> <!-- To store the heap dumps and leak analysis results. -->
+33-->[androidx.core:core:1.13.1] C:\Users\gelea\.gradle\caches\8.13\transforms\41a4535204a61c2d2d641573e2d3ac84\transformed\core-1.13.1\AndroidManifest.xml:26:5-97
+33-->[androidx.core:core:1.13.1] C:\Users\gelea\.gradle\caches\8.13\transforms\41a4535204a61c2d2d641573e2d3ac84\transformed\core-1.13.1\AndroidManifest.xml:26:22-94
+34    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+34-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:25:5-80
+34-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:25:22-77
+35    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+35-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:26:5-81
+35-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:26:22-78
+36
+37    <application
+37-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:7:5-30:19
+38        android:name="com.artence.cmms.CMMSApplication"
+38-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:8:9-40
+39        android:allowBackup="true"
+39-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:9:9-35
+40        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+40-->[androidx.core:core:1.13.1] C:\Users\gelea\.gradle\caches\8.13\transforms\41a4535204a61c2d2d641573e2d3ac84\transformed\core-1.13.1\AndroidManifest.xml:28:18-86
+41        android:dataExtractionRules="@xml/data_extraction_rules"
+41-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:10:9-65
+42        android:debuggable="true"
+43        android:extractNativeLibs="false"
+44        android:fullBackupContent="@xml/backup_rules"
+44-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:11:9-54
+45        android:icon="@android:drawable/sym_def_app_icon"
+45-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:12:9-58
+46        android:label="@string/app_name"
+46-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:13:9-41
+47        android:roundIcon="@android:drawable/sym_def_app_icon"
+47-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:14:9-63
+48        android:supportsRtl="true"
+48-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:15:9-35
+49        android:theme="@style/Theme.CMMS"
+49-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:16:9-42
+50        android:usesCleartextTraffic="true" >
+50-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:17:9-44
+51        <activity
+51-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:19:9-29:20
+52            android:name="com.artence.cmms.MainActivity"
+52-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:20:13-41
+53            android:exported="true"
+53-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:21:13-36
+54            android:label="@string/app_name"
+54-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:22:13-45
+55            android:theme="@style/Theme.CMMS" >
+55-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:23:13-46
+56            <intent-filter>
+56-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:24:13-28:29
+57                <action android:name="android.intent.action.MAIN" />
+57-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:25:17-69
+57-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:25:25-66
+58
+59                <category android:name="android.intent.category.LAUNCHER" />
+59-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:27:17-77
+59-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:27:27-74
+60            </intent-filter>
+61        </activity>
+62        <activity
+62-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:21:9-26:52
+63            android:name="com.chuckerteam.chucker.internal.ui.MainActivity"
+63-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:22:13-76
+64            android:label="@string/chucker_name"
+64-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:23:13-49
+65            android:launchMode="singleTask"
+65-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:24:13-44
+66            android:taskAffinity="com.chuckerteam.chucker.task"
+66-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:25:13-64
+67            android:theme="@style/Chucker.Theme" />
+67-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:26:13-49
+68        <activity
+68-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:27:9-30:52
+69            android:name="com.chuckerteam.chucker.internal.ui.transaction.TransactionActivity"
+69-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:28:13-95
+70            android:parentActivityName="com.chuckerteam.chucker.internal.ui.MainActivity"
+70-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:29:13-90
+71            android:theme="@style/Chucker.Theme" />
+71-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:30:13-49
+72
+73        <service
+73-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:32:9-35:72
+74            android:name="com.chuckerteam.chucker.internal.support.ClearDatabaseService"
+74-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:33:13-89
+75            android:exported="false"
+75-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:34:13-37
+76            android:permission="android.permission.BIND_JOB_SERVICE" />
+76-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:35:13-69
+77
+78        <receiver
+78-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:37:9-39:40
+79            android:name="com.chuckerteam.chucker.internal.support.ClearDatabaseJobIntentServiceReceiver"
+79-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:38:13-106
+80            android:exported="false" />
+80-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:39:13-37
+81
+82        <provider
+82-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:41:9-49:20
+83            android:name="com.chuckerteam.chucker.internal.support.ChuckerFileProvider"
+83-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:42:13-88
+84            android:authorities="com.artence.cmms.com.chuckerteam.chucker.provider"
+84-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:43:13-84
+85            android:exported="false"
+85-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:44:13-37
+86            android:grantUriPermissions="true" >
+86-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:45:13-47
+87            <meta-data
+87-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:46:13-48:66
+88                android:name="android.support.FILE_PROVIDER_PATHS"
+88-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:47:17-67
+89                android:resource="@xml/chucker_provider_paths" />
+89-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:48:17-63
+90        </provider>
+91        <provider
+91-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:29:9-37:20
+92            android:name="androidx.startup.InitializationProvider"
+92-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:30:13-67
+93            android:authorities="com.artence.cmms.androidx-startup"
+93-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:31:13-68
+94            android:exported="false" >
+94-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:32:13-37
+95            <meta-data
+95-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:34:13-36:52
+96                android:name="androidx.work.WorkManagerInitializer"
+96-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:35:17-68
+97                android:value="androidx.startup" />
+97-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:36:17-49
+98            <meta-data
+98-->[androidx.emoji2:emoji2:1.3.0] C:\Users\gelea\.gradle\caches\8.13\transforms\f3baf737472ac4a6b548e358ab2933db\transformed\emoji2-1.3.0\AndroidManifest.xml:29:13-31:52
+99                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+99-->[androidx.emoji2:emoji2:1.3.0] C:\Users\gelea\.gradle\caches\8.13\transforms\f3baf737472ac4a6b548e358ab2933db\transformed\emoji2-1.3.0\AndroidManifest.xml:30:17-75
+100                android:value="androidx.startup" />
+100-->[androidx.emoji2:emoji2:1.3.0] C:\Users\gelea\.gradle\caches\8.13\transforms\f3baf737472ac4a6b548e358ab2933db\transformed\emoji2-1.3.0\AndroidManifest.xml:31:17-49
+101            <meta-data
+101-->[androidx.lifecycle:lifecycle-process:2.8.3] C:\Users\gelea\.gradle\caches\8.13\transforms\11f4db525cca93629dfe9cd7b786d81a\transformed\lifecycle-process-2.8.3\AndroidManifest.xml:29:13-31:52
+102                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+102-->[androidx.lifecycle:lifecycle-process:2.8.3] C:\Users\gelea\.gradle\caches\8.13\transforms\11f4db525cca93629dfe9cd7b786d81a\transformed\lifecycle-process-2.8.3\AndroidManifest.xml:30:17-78
+103                android:value="androidx.startup" />
+103-->[androidx.lifecycle:lifecycle-process:2.8.3] C:\Users\gelea\.gradle\caches\8.13\transforms\11f4db525cca93629dfe9cd7b786d81a\transformed\lifecycle-process-2.8.3\AndroidManifest.xml:31:17-49
+104            <meta-data
+104-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\gelea\.gradle\caches\8.13\transforms\2cfdc07d9ff2af554d0b217c17d45e2b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:29:13-31:52
+105                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+105-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\gelea\.gradle\caches\8.13\transforms\2cfdc07d9ff2af554d0b217c17d45e2b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:30:17-85
+106                android:value="androidx.startup" />
+106-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\gelea\.gradle\caches\8.13\transforms\2cfdc07d9ff2af554d0b217c17d45e2b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:31:17-49
+107        </provider>
+108
+109        <service
+109-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:39:9-45:35
+110            android:name="androidx.work.impl.background.systemalarm.SystemAlarmService"
+110-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:40:13-88
+111            android:directBootAware="false"
+111-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:41:13-44
+112            android:enabled="@bool/enable_system_alarm_service_default"
+112-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:42:13-72
+113            android:exported="false" />
+113-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:43:13-37
+114        <service
+114-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:46:9-52:35
+115            android:name="androidx.work.impl.background.systemjob.SystemJobService"
+115-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:47:13-84
+116            android:directBootAware="false"
+116-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:48:13-44
+117            android:enabled="@bool/enable_system_job_service_default"
+117-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:49:13-70
+118            android:exported="true"
+118-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:50:13-36
+119            android:permission="android.permission.BIND_JOB_SERVICE" />
+119-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:51:13-69
+120        <service
+120-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:53:9-59:35
+121            android:name="androidx.work.impl.foreground.SystemForegroundService"
+121-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:54:13-81
+122            android:directBootAware="false"
+122-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:55:13-44
+123            android:enabled="@bool/enable_system_foreground_service_default"
+123-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:56:13-77
+124            android:exported="false" />
+124-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:57:13-37
+125
+126        <receiver
+126-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:61:9-66:35
+127            android:name="androidx.work.impl.utils.ForceStopRunnable$BroadcastReceiver"
+127-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:62:13-88
+128            android:directBootAware="false"
+128-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:63:13-44
+129            android:enabled="true"
+129-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:64:13-35
+130            android:exported="false" />
+130-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:65:13-37
+131        <receiver
+131-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:67:9-77:20
+132            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryChargingProxy"
+132-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:68:13-106
+133            android:directBootAware="false"
+133-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:69:13-44
+134            android:enabled="false"
+134-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:70:13-36
+135            android:exported="false" >
+135-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:71:13-37
+136            <intent-filter>
+136-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:73:13-76:29
+137                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+137-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:74:17-87
+137-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:74:25-84
+138                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
+138-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:75:17-90
+138-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:75:25-87
+139            </intent-filter>
+140        </receiver>
+141        <receiver
+141-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:78:9-88:20
+142            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryNotLowProxy"
+142-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:79:13-104
+143            android:directBootAware="false"
+143-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:80:13-44
+144            android:enabled="false"
+144-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:81:13-36
+145            android:exported="false" >
+145-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:82:13-37
+146            <intent-filter>
+146-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:84:13-87:29
+147                <action android:name="android.intent.action.BATTERY_OKAY" />
+147-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:85:17-77
+147-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:85:25-74
+148                <action android:name="android.intent.action.BATTERY_LOW" />
+148-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:86:17-76
+148-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:86:25-73
+149            </intent-filter>
+150        </receiver>
+151        <receiver
+151-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:89:9-99:20
+152            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$StorageNotLowProxy"
+152-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:90:13-104
+153            android:directBootAware="false"
+153-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:91:13-44
+154            android:enabled="false"
+154-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:92:13-36
+155            android:exported="false" >
+155-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:93:13-37
+156            <intent-filter>
+156-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:95:13-98:29
+157                <action android:name="android.intent.action.DEVICE_STORAGE_LOW" />
+157-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:96:17-83
+157-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:96:25-80
+158                <action android:name="android.intent.action.DEVICE_STORAGE_OK" />
+158-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:97:17-82
+158-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:97:25-79
+159            </intent-filter>
+160        </receiver>
+161        <receiver
+161-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:100:9-109:20
+162            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$NetworkStateProxy"
+162-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:101:13-103
+163            android:directBootAware="false"
+163-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:102:13-44
+164            android:enabled="false"
+164-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:103:13-36
+165            android:exported="false" >
+165-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:104:13-37
+166            <intent-filter>
+166-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:106:13-108:29
+167                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+167-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:107:17-79
+167-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:107:25-76
+168            </intent-filter>
+169        </receiver>
+170        <receiver
+170-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:110:9-121:20
+171            android:name="androidx.work.impl.background.systemalarm.RescheduleReceiver"
+171-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:111:13-88
+172            android:directBootAware="false"
+172-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:112:13-44
+173            android:enabled="false"
+173-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:113:13-36
+174            android:exported="false" >
+174-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:114:13-37
+175            <intent-filter>
+175-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:116:13-120:29
+176                <action android:name="android.intent.action.BOOT_COMPLETED" />
+176-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:117:17-79
+176-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:117:25-76
+177                <action android:name="android.intent.action.TIME_SET" />
+177-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:118:17-73
+177-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:118:25-70
+178                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+178-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:119:17-81
+178-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:119:25-78
+179            </intent-filter>
+180        </receiver>
+181        <receiver
+181-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:122:9-131:20
+182            android:name="androidx.work.impl.background.systemalarm.ConstraintProxyUpdateReceiver"
+182-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:123:13-99
+183            android:directBootAware="false"
+183-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:124:13-44
+184            android:enabled="@bool/enable_system_alarm_service_default"
+184-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:125:13-72
+185            android:exported="false" >
+185-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:126:13-37
+186            <intent-filter>
+186-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:128:13-130:29
+187                <action android:name="androidx.work.impl.background.systemalarm.UpdateProxies" />
+187-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:129:17-98
+187-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:129:25-95
+188            </intent-filter>
+189        </receiver>
+190        <receiver
+190-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:132:9-142:20
+191            android:name="androidx.work.impl.diagnostics.DiagnosticsReceiver"
+191-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:133:13-78
+192            android:directBootAware="false"
+192-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:134:13-44
+193            android:enabled="true"
+193-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:135:13-35
+194            android:exported="true"
+194-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:136:13-36
+195            android:permission="android.permission.DUMP" >
+195-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:137:13-57
+196            <intent-filter>
+196-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:139:13-141:29
+197                <action android:name="androidx.work.diagnostics.REQUEST_DIAGNOSTICS" />
+197-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:140:17-88
+197-->[androidx.work:work-runtime:2.9.1] C:\Users\gelea\.gradle\caches\8.13\transforms\63948ff08230a5c81b19b52981a8952f\transformed\work-runtime-2.9.1\AndroidManifest.xml:140:25-85
+198            </intent-filter>
+199        </receiver>
+200
+201        <activity
+201-->[androidx.compose.ui:ui-tooling-android:1.7.4] C:\Users\gelea\.gradle\caches\8.13\transforms\2256e2278d49ceb79ff32abf3fbb714a\transformed\ui-tooling-release\AndroidManifest.xml:23:9-25:39
+202            android:name="androidx.compose.ui.tooling.PreviewActivity"
+202-->[androidx.compose.ui:ui-tooling-android:1.7.4] C:\Users\gelea\.gradle\caches\8.13\transforms\2256e2278d49ceb79ff32abf3fbb714a\transformed\ui-tooling-release\AndroidManifest.xml:24:13-71
+203            android:exported="true" />
+203-->[androidx.compose.ui:ui-tooling-android:1.7.4] C:\Users\gelea\.gradle\caches\8.13\transforms\2256e2278d49ceb79ff32abf3fbb714a\transformed\ui-tooling-release\AndroidManifest.xml:25:13-36
+204        <activity
+204-->[androidx.compose.ui:ui-test-manifest:1.7.4] C:\Users\gelea\.gradle\caches\8.13\transforms\9d7c78728ecfbd97e9c26302f70618ed\transformed\ui-test-manifest-1.7.4\AndroidManifest.xml:23:9-25:39
+205            android:name="androidx.activity.ComponentActivity"
+205-->[androidx.compose.ui:ui-test-manifest:1.7.4] C:\Users\gelea\.gradle\caches\8.13\transforms\9d7c78728ecfbd97e9c26302f70618ed\transformed\ui-test-manifest-1.7.4\AndroidManifest.xml:24:13-63
+206            android:exported="true" />
+206-->[androidx.compose.ui:ui-test-manifest:1.7.4] C:\Users\gelea\.gradle\caches\8.13\transforms\9d7c78728ecfbd97e9c26302f70618ed\transformed\ui-test-manifest-1.7.4\AndroidManifest.xml:25:13-36
+207
+208        <service
+208-->[androidx.room:room-runtime:2.6.1] C:\Users\gelea\.gradle\caches\8.13\transforms\8b0b4cdfeafbb773bf0dec08f5e6ff83\transformed\room-runtime-2.6.1\AndroidManifest.xml:24:9-28:63
+209            android:name="androidx.room.MultiInstanceInvalidationService"
+209-->[androidx.room:room-runtime:2.6.1] C:\Users\gelea\.gradle\caches\8.13\transforms\8b0b4cdfeafbb773bf0dec08f5e6ff83\transformed\room-runtime-2.6.1\AndroidManifest.xml:25:13-74
+210            android:directBootAware="true"
+210-->[androidx.room:room-runtime:2.6.1] C:\Users\gelea\.gradle\caches\8.13\transforms\8b0b4cdfeafbb773bf0dec08f5e6ff83\transformed\room-runtime-2.6.1\AndroidManifest.xml:26:13-43
+211            android:exported="false" />
+211-->[androidx.room:room-runtime:2.6.1] C:\Users\gelea\.gradle\caches\8.13\transforms\8b0b4cdfeafbb773bf0dec08f5e6ff83\transformed\room-runtime-2.6.1\AndroidManifest.xml:27:13-37
+212
+213        <provider
+213-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:32:9-40:20
+214            android:name="leakcanary.internal.LeakCanaryFileProvider"
+214-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:33:13-70
+215            android:authorities="com.squareup.leakcanary.fileprovider.com.artence.cmms"
+215-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:34:13-88
+216            android:exported="false"
+216-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:35:13-37
+217            android:grantUriPermissions="true" >
+217-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:36:13-47
+218            <meta-data
+218-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:46:13-48:66
+219                android:name="android.support.FILE_PROVIDER_PATHS"
+219-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:47:17-67
+220                android:resource="@xml/leak_canary_file_paths" />
+220-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:48:17-63
+221        </provider>
+222
+223        <activity
+223-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:42:9-73:20
+224            android:name="leakcanary.internal.activity.LeakActivity"
+224-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:43:13-69
+225            android:exported="true"
+225-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:44:13-36
+226            android:icon="@mipmap/leak_canary_icon"
+226-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:45:13-52
+227            android:label="@string/leak_canary_display_activity_label"
+227-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:46:13-71
+228            android:taskAffinity="com.squareup.leakcanary.com.artence.cmms"
+228-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:47:13-76
+229            android:theme="@style/leak_canary_LeakCanary.Base" >
+229-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:48:13-63
+230            <intent-filter android:label="@string/leak_canary_import_hprof_file" >
+230-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:49:13-72:29
+230-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:49:28-81
+231                <action android:name="android.intent.action.VIEW" />
+231-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:50:17-69
+231-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:50:25-66
+232
+233                <category android:name="android.intent.category.DEFAULT" />
+233-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:52:17-76
+233-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:52:27-73
+234                <category android:name="android.intent.category.BROWSABLE" />
+234-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:53:17-78
+234-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:53:27-75
+235
+236                <data android:scheme="file" />
+236-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:11:13-44
+237                <data android:scheme="content" />
+237-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:11:13-44
+238                <data android:mimeType="*/*" />
+238-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:11:13-44
+238-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:11:19-41
+239                <data android:host="*" />
+239-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:11:13-44
+240                <data android:pathPattern=".*\\.hprof" />
+240-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:11:13-44
+241                <data android:pathPattern=".*\\..*\\.hprof" />
+241-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:11:13-44
+242                <data android:pathPattern=".*\\..*\\..*\\.hprof" />
+242-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:11:13-44
+243                <data android:pathPattern=".*\\..*\\..*\\..*\\.hprof" />
+243-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:11:13-44
+244                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\.hprof" />
+244-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:11:13-44
+245                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\.hprof" />
+245-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:11:13-44
+246                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\.hprof" />
+246-->[com.github.chuckerteam.chucker:library:4.0.0] C:\Users\gelea\.gradle\caches\8.13\transforms\45c7265c3d86b7c1504ae80062d6a313\transformed\library-4.0.0\AndroidManifest.xml:11:13-44
+247                <!--
+248            Since hprof isn't a standard MIME type, we have to declare such patterns.
+249            Most file providers will generate URIs including their own package name,
+250            which contains `.` characters that must be explicitly escaped in pathPattern.
+251            @see https://stackoverflow.com/a/31028507/703646
+252                -->
+253            </intent-filter>
+254        </activity>
+255
+256        <activity-alias
+256-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:75:9-92:26
+257            android:name="leakcanary.internal.activity.LeakLauncherActivity"
+257-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:76:13-77
+258            android:banner="@drawable/leak_canary_tv_icon"
+258-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:77:13-59
+259            android:enabled="@bool/leak_canary_add_launcher_icon"
+259-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:78:13-66
+260            android:exported="true"
+260-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:79:13-36
+261            android:icon="@mipmap/leak_canary_icon"
+261-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:80:13-52
+262            android:label="@string/leak_canary_display_activity_label"
+262-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:81:13-71
+263            android:targetActivity="leakcanary.internal.activity.LeakActivity"
+263-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:82:13-79
+264            android:taskAffinity="com.squareup.leakcanary.com.artence.cmms"
+264-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:83:13-76
+265            android:theme="@style/leak_canary_LeakCanary.Base" >
+265-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:84:13-63
+266            <intent-filter>
+266-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:85:13-91:29
+267                <action android:name="android.intent.action.MAIN" />
+267-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:25:17-69
+267-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:25:25-66
+268
+269                <category android:name="android.intent.category.LAUNCHER" />
+269-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:27:17-77
+269-->E:\Artence_CMMS\AndroidApp\app\src\main\AndroidManifest.xml:27:27-74
+270                <!-- Android TV launcher intent -->
+271                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+271-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:90:17-86
+271-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:90:27-83
+272            </intent-filter>
+273        </activity-alias>
+274
+275        <activity
+275-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:94:9-100:68
+276            android:name="leakcanary.internal.RequestPermissionActivity"
+276-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:95:13-73
+277            android:excludeFromRecents="true"
+277-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:96:13-46
+278            android:icon="@mipmap/leak_canary_icon"
+278-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:97:13-52
+279            android:label="@string/leak_canary_storage_permission_activity_label"
+279-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:98:13-82
+280            android:taskAffinity="com.squareup.leakcanary.com.artence.cmms"
+280-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:99:13-76
+281            android:theme="@style/leak_canary_Theme.Transparent" />
+281-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:100:13-65
+282
+283        <receiver android:name="leakcanary.internal.NotificationReceiver" />
+283-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:102:9-77
+283-->[com.squareup.leakcanary:leakcanary-android-core:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\dfa302b60726c1ea4c154c3f16ff20ea\transformed\leakcanary-android-core-2.13\AndroidManifest.xml:102:19-74
+284
+285        <provider
+285-->[com.squareup.leakcanary:leakcanary-object-watcher-android:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\60be9d7056c636c6d612c8926282d10b\transformed\leakcanary-object-watcher-android-2.13\AndroidManifest.xml:8:9-12:40
+286            android:name="leakcanary.internal.MainProcessAppWatcherInstaller"
+286-->[com.squareup.leakcanary:leakcanary-object-watcher-android:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\60be9d7056c636c6d612c8926282d10b\transformed\leakcanary-object-watcher-android-2.13\AndroidManifest.xml:9:13-78
+287            android:authorities="com.artence.cmms.leakcanary-installer"
+287-->[com.squareup.leakcanary:leakcanary-object-watcher-android:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\60be9d7056c636c6d612c8926282d10b\transformed\leakcanary-object-watcher-android-2.13\AndroidManifest.xml:10:13-72
+288            android:enabled="@bool/leak_canary_watcher_auto_install"
+288-->[com.squareup.leakcanary:leakcanary-object-watcher-android:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\60be9d7056c636c6d612c8926282d10b\transformed\leakcanary-object-watcher-android-2.13\AndroidManifest.xml:11:13-69
+289            android:exported="false" />
+289-->[com.squareup.leakcanary:leakcanary-object-watcher-android:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\60be9d7056c636c6d612c8926282d10b\transformed\leakcanary-object-watcher-android-2.13\AndroidManifest.xml:12:13-37
+290        <provider
+290-->[com.squareup.leakcanary:plumber-android:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\f391e591e19b6151391a61618ae2607b\transformed\plumber-android-2.13\AndroidManifest.xml:8:9-12:40
+291            android:name="leakcanary.internal.PlumberInstaller"
+291-->[com.squareup.leakcanary:plumber-android:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\f391e591e19b6151391a61618ae2607b\transformed\plumber-android-2.13\AndroidManifest.xml:9:13-64
+292            android:authorities="com.artence.cmms.plumber-installer"
+292-->[com.squareup.leakcanary:plumber-android:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\f391e591e19b6151391a61618ae2607b\transformed\plumber-android-2.13\AndroidManifest.xml:10:13-69
+293            android:enabled="@bool/leak_canary_plumber_auto_install"
+293-->[com.squareup.leakcanary:plumber-android:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\f391e591e19b6151391a61618ae2607b\transformed\plumber-android-2.13\AndroidManifest.xml:11:13-69
+294            android:exported="false" />
+294-->[com.squareup.leakcanary:plumber-android:2.13] C:\Users\gelea\.gradle\caches\8.13\transforms\f391e591e19b6151391a61618ae2607b\transformed\plumber-android-2.13\AndroidManifest.xml:12:13-37
+295
+296        <receiver
+296-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\gelea\.gradle\caches\8.13\transforms\2cfdc07d9ff2af554d0b217c17d45e2b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:34:9-52:20
+297            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+297-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\gelea\.gradle\caches\8.13\transforms\2cfdc07d9ff2af554d0b217c17d45e2b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:35:13-76
+298            android:directBootAware="false"
+298-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\gelea\.gradle\caches\8.13\transforms\2cfdc07d9ff2af554d0b217c17d45e2b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:36:13-44
+299            android:enabled="true"
+299-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\gelea\.gradle\caches\8.13\transforms\2cfdc07d9ff2af554d0b217c17d45e2b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:37:13-35
+300            android:exported="true"
+300-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\gelea\.gradle\caches\8.13\transforms\2cfdc07d9ff2af554d0b217c17d45e2b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:38:13-36
+301            android:permission="android.permission.DUMP" >
+301-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\gelea\.gradle\caches\8.13\transforms\2cfdc07d9ff2af554d0b217c17d45e2b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:39:13-57
+302            <intent-filter>
+302-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\gelea\.gradle\caches\8.13\transforms\2cfdc07d9ff2af554d0b217c17d45e2b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:40:13-42:29
+303                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+303-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\gelea\.gradle\caches\8.13\transforms\2cfdc07d9ff2af554d0b217c17d45e2b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:41:17-91
+303-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\gelea\.gradle\caches\8.13\transforms\2cfdc07d9ff2af554d0b217c17d45e2b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:41:25-88
+304            </intent-filter>
+305            <intent-filter>
+305-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\gelea\.gradle\caches\8.13\transforms\2cfdc07d9ff2af554d0b217c17d45e2b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:43:13-45:29
+306                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+306-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\gelea\.gradle\caches\8.13\transforms\2cfdc07d9ff2af554d0b217c17d45e2b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:44:17-85
+306-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\gelea\.gradle\caches\8.13\transforms\2cfdc07d9ff2af554d0b217c17d45e2b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:44:25-82
+307            </intent-filter>
+308            <intent-filter>
+308-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\gelea\.gradle\caches\8.13\transforms\2cfdc07d9ff2af554d0b217c17d45e2b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:46:13-48:29
+309                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+309-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\gelea\.gradle\caches\8.13\transforms\2cfdc07d9ff2af554d0b217c17d45e2b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:47:17-88
+309-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\gelea\.gradle\caches\8.13\transforms\2cfdc07d9ff2af554d0b217c17d45e2b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:47:25-85
+310            </intent-filter>
+311            <intent-filter>
+311-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\gelea\.gradle\caches\8.13\transforms\2cfdc07d9ff2af554d0b217c17d45e2b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:49:13-51:29
+312                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+312-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\gelea\.gradle\caches\8.13\transforms\2cfdc07d9ff2af554d0b217c17d45e2b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:17-95
+312-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\gelea\.gradle\caches\8.13\transforms\2cfdc07d9ff2af554d0b217c17d45e2b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:25-92
+313            </intent-filter>
+314        </receiver>
+315    </application>
+316
+317</manifest>

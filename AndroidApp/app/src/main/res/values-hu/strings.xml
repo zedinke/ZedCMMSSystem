@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CMMS</string>
+
+    <!-- Common -->
+    <string name="ok">OK</string>
+    <string name="cancel">Mégse</string>
+    <string name="save">Mentés</string>
+    <string name="delete">Törlés</string>
+    <string name="edit">Szerkesztés</string>
+    <string name="add">Hozzáadás</string>
+    <string name="search">Keresés</string>
+    <string name="filter">Szűrés</string>
+    <string name="settings">Beállítások</string>
+    <string name="logout">Kijelentkezés</string>
+    <string name="loading">Betöltés…</string>
+    <string name="error">Hiba</string>
+    <string name="success">Sikeres</string>
+
+    <!-- Login -->
+    <string name="login">Bejelentkezés</string>
+    <string name="username">Felhasználónév</string>
+    <string name="password">Jelszó</string>
+    <string name="login_failed">Bejelentkezés sikertelen</string>
+    <string name="welcome">Üdvözöljük</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard">Irányítópult</string>
+    <string name="main_menu">Főmenü</string>
+
+    <!-- Navigation -->
+    <string name="assets">Eszközök</string>
+    <string name="inventory">Készlet</string>
+    <string name="worksheets">Munkalapok</string>
+    <string name="machines">Gépek</string>
+    <string name="pm">Megelőző Karbantartás</string>
+    <string name="reports">Jelentések</string>
+    <string name="users">Felhasználók</string>
+
+    <!-- Machine Status -->
+    <string name="status_operational">Működik</string>
+    <string name="status_maintenance">Karbantartás alatt</string>
+    <string name="status_breakdown">Leállt</string>
+    <string name="status_offline">Kikapcsolva</string>
+
+    <!-- Worksheet Status -->
+    <string name="status_pending">Függőben</string>
+    <string name="status_in_progress">Folyamatban</string>
+    <string name="status_completed">Befejezve</string>
+    <string name="status_cancelled">Törölve</string>
+
+    <!-- Priority -->
+    <string name="priority_low">Alacsony</string>
+    <string name="priority_medium">Közepes</string>
+    <string name="priority_high">Magas</string>
+    <string name="priority_urgent">Sürgős</string>
+
+    <!-- Fields -->
+    <string name="name">Név</string>
+    <string name="description">Leírás</string>
+    <string name="status">Állapot</string>
+    <string name="priority">Prioritás</string>
+    <string name="assigned_to">Felelős</string>
+    <string name="created_at">Létrehozva</string>
+    <string name="updated_at">Frissítve</string>
+    <string name="role">Szerepkör</string>
+    <string name="email">E-mail</string>
+    <string name="not_available">N/A</string>
+    <string name="close">Bezárás</string>
+
+    <!-- Messages -->
+    <string name="no_data">Nincs elérhető adat</string>
+    <string name="confirm_delete">Biztosan törölni szeretné ezt az elemet?</string>
+    <string name="refresh">Frissítés</string>
+
+    <!-- Reports -->
+    <string name="reports_summary">Összefoglaló</string>
+    <string name="reports_machines_total">Összes gép</string>
+    <string name="reports_worksheets_open">Nyitott munkalapok</string>
+    <string name="reports_pm_due_this_week">Ezen a héten esedékes PM</string>
+    <string name="reports_inventory_low_stock">Alacsony készletű tételek</string>
+    <string name="reports_maintenance">Karbantartás</string>
+    <string name="reports_maintenance_history">Karbantartási előzmények</string>
+    <string name="reports_maintenance_history_subtitle">Befejezett karbantartási feladatok megtekintése</string>
+    <string name="reports_pm_schedule">PM ütemezés</string>
+    <string name="reports_pm_schedule_subtitle">Következő megelőző karbantartások</string>
+    <string name="reports_maintenance_costs">Karbantartási költségek</string>
+    <string name="reports_maintenance_costs_subtitle">Költséganalízis gépenként/osztályonként</string>
+    <string name="reports_stock_levels">Készletszint</string>
+    <string name="reports_stock_levels_subtitle">Jelenlegi készletállapot</string>
+    <string name="reports_low_stock_items">Alacsony készletű tételek</string>
+    <string name="reports_low_stock_items_subtitle">Minimum küszöbérték alatti tételek</string>
+    <string name="reports_stock_movements">Készletmozgások</string>
+    <string name="reports_stock_movements_subtitle">Készletbevételek és kiadások előzményei</string>
+    <string name="reports_performance">Teljesítmény</string>
+    <string name="reports_machine_performance">Gép teljesítmény</string>
+    <string name="reports_machine_performance_subtitle">Állásidő és hatékonysági mutatók</string>
+    <string name="reports_technician_performance">Technikus teljesítmény</string>
+    <string name="reports_technician_performance_subtitle">Feladat teljesítés és értékelések</string>
+
+    <!-- Settings -->
+    <string name="settings_profile">Profil</string>
+    <string name="settings_edit_profile">Profil szerkesztése</string>
+    <string name="settings_preferences">Beállítások</string>
+    <string name="settings_language">Nyelv</string>
+    <string name="settings_language_english">Angol</string>
+    <string name="settings_language_hungarian">Magyar</string>
+    <string name="settings_language_system">Rendszer</string>
+    <string name="settings_select_language">Nyelv kiválasztása</string>
+    <string name="settings_theme">Téma</string>
+    <string name="settings_theme_dark">Sötét mód</string>
+    <string name="settings_theme_light">Világos mód</string>
+    <string name="settings_enable_notifications">Értesítések engedélyezése</string>
+    <string name="settings_offline_mode">Offline mód</string>
+    <string name="settings_offline_mode_subtitle">Gyorsítótárazott adatok használata offline állapotban</string>
+    <string name="settings_about">Névjegy</string>
+    <string name="settings_app_version">Alkalmazás verzió</string>
+    <string name="settings_build">Build</string>
+    <string name="settings_database">Adatbázis</string>
+    <string name="settings_database_synced">Szinkronizálva</string>
+    <string name="settings_privacy_policy">Adatvédelmi irányelvek</string>
+    <string name="settings_danger_zone">Veszélyzóna</string>
+    <string name="settings_logout_confirm">Biztosan ki szeretne jelentkezni?</string>
+</resources>
+
