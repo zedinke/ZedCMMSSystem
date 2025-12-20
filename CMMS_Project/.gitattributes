@@ -1,0 +1,2 @@
+installer/*.exe filter=lfs diff=lfs merge=lfs -text
+dist/Updater.exe filter=lfs diff=lfs merge=lfs -text
