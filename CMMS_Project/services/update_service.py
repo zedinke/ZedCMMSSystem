@@ -313,17 +313,46 @@ class UpdateService:
                         with urllib.request.urlopen(content_request, timeout=10) as content_response:
                             if content_response.status == 200:
                                 content_data = json.loads(content_response.read().decode())
-                                # For LFS files, GitHub provides download_url
+                                # For LFS files, GitHub provides download_url in the response
                                 download_url = content_data.get("download_url")
-                                if download_url:
+                                # If download_url is None, try to get it from git_lfs or other fields
+                                if not download_url:
+                                    # For Git LFS files, the download might be through a different mechanism
+                                    # Try using the raw.githubusercontent.com URL
+                                    download_url = f"https://raw.githubusercontent.com/{self.github_owner}/{self.github_repo}/{tag_name}/{file_path}"
+                                    logger.info(f"Using raw GitHub URL for LFS file: {download_url[:50]}...")
+                                else:
                                     logger.info(f"Found download URL from GitHub API: {download_url[:50]}...")
+                            elif content_response.status == 404:
+                                # File not found at that path, try alternative path
+                                logger.warning(f"File not found at {file_path}, trying alternative path")
+                                # Try without CMMS_Project prefix
+                                alt_file_path = f"installer/ZedCMMS_Setup_v{version}.exe"
+                                alt_content_url = f"{self.api_base_url}/contents/{alt_file_path}?ref={tag_name}"
+                                try:
+                                    alt_content_request = urllib.request.Request(
+                                        alt_content_url,
+                                        headers={
+                                            "User-Agent": "ArtenceCMMS-Updater/1.0",
+                                            "Accept": "application/vnd.github.v3+json",
+                                        }
+                                    )
+                                    with urllib.request.urlopen(alt_content_request, timeout=10) as alt_content_response:
+                                        if alt_content_response.status == 200:
+                                            alt_content_data = json.loads(alt_content_response.read().decode())
+                                            download_url = alt_content_data.get("download_url")
+                                            if not download_url:
+                                                download_url = f"https://raw.githubusercontent.com/{self.github_owner}/{self.github_repo}/{tag_name}/{alt_file_path}"
+                                except Exception:
+                                    pass
                     except Exception as e:
                         logger.warning(f"Could not get download URL from GitHub API: {e}")
                     
                     # Fallback to raw URL if API didn't work
                     if not download_url:
-                        download_url = f"https://github.com/{self.github_owner}/{self.github_repo}/raw/{tag_name}/{file_path}"
-                        logger.info(f"Using raw URL as fallback: {download_url[:50]}...")
+                        # Try both paths
+                        download_url = f"https://raw.githubusercontent.com/{self.github_owner}/{self.github_repo}/{tag_name}/{file_path}"
+                        logger.info(f"Using raw GitHub URL as fallback: {download_url[:50]}...")
                     
                     # Create release-like structure
                     release_data = {
