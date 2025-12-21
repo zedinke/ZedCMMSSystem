@@ -47,6 +47,7 @@ from ui.components.modern_card import (
     create_info_card,
 )
 from ui.components.modern_components import create_empty_state_card
+from ui.screens.super_mario_game import SuperMarioGame
 
 
 class SettingsScreen:
@@ -62,6 +63,9 @@ class SettingsScreen:
         lang_options = [
             ft.dropdown.Option("en", "English"),
             ft.dropdown.Option("hu", "Magyar"),
+            ft.dropdown.Option("de", "Deutsch"),
+            ft.dropdown.Option("ro", "Română"),
+            ft.dropdown.Option("ja", "日本語"),
         ]
         
         def on_lang_change(e):
@@ -122,6 +126,10 @@ class SettingsScreen:
             set_selected_storage_receipt_template,
             get_selected_storage_transfer_template,
             set_selected_storage_transfer_template,
+            get_selected_inventory_count_template,
+            set_selected_inventory_count_template,
+            get_selected_inventory_correction_template,
+            set_selected_inventory_correction_template,
             get_worksheet_name_format,
             set_worksheet_name_format,
             get_selected_scrapping_template,
@@ -143,6 +151,8 @@ class SettingsScreen:
         selected_vacation = get_selected_vacation_template()
         selected_storage_receipt = get_selected_storage_receipt_template()
         selected_storage_transfer = get_selected_storage_transfer_template()
+        selected_inventory_count = get_selected_inventory_count_template()
+        selected_inventory_correction = get_selected_inventory_correction_template()
         
         worksheet_template_dropdown = ft.Dropdown(
             label=translator.get_text("settings.worksheet_template"),
@@ -286,6 +296,42 @@ class SettingsScreen:
                 page.update()
         
         storage_transfer_template_dropdown.on_change = on_storage_transfer_template_change
+        
+        # Inventory Count Template
+        inventory_count_template_dropdown = ft.Dropdown(
+            label=translator.get_text("settings.inventory_count_template") if hasattr(translator, 'get_text') and translator.get_text("settings.inventory_count_template") else "Leltár sablon / Inventory Count Template",
+            options=[ft.dropdown.Option(str(p), p.name) for p in template_files] or [ft.dropdown.Option("", "Nincs sablon")],
+            value=str(selected_inventory_count) if selected_inventory_count else None,
+            width=400,
+        )
+        
+        def on_inventory_count_template_change(e):
+            val = e.control.value
+            if val:
+                set_selected_inventory_count_template(Path(val))
+                page.snack_bar = ft.SnackBar(ft.Text(translator.get_text("success_messages.updated")))
+                page.snack_bar.open = True
+                page.update()
+        
+        inventory_count_template_dropdown.on_change = on_inventory_count_template_change
+        
+        # Inventory Correction Template
+        inventory_correction_template_dropdown = ft.Dropdown(
+            label=translator.get_text("settings.inventory_correction_template") if hasattr(translator, 'get_text') and translator.get_text("settings.inventory_correction_template") else "Készletkorrekció sablon / Inventory Correction Template",
+            options=[ft.dropdown.Option(str(p), p.name) for p in template_files] or [ft.dropdown.Option("", "Nincs sablon")],
+            value=str(selected_inventory_correction) if selected_inventory_correction else None,
+            width=400,
+        )
+        
+        def on_inventory_correction_template_change(e):
+            val = e.control.value
+            if val:
+                set_selected_inventory_correction_template(Path(val))
+                page.snack_bar = ft.SnackBar(ft.Text(translator.get_text("success_messages.updated")))
+                page.snack_bar.open = True
+                page.update()
+        
+        inventory_correction_template_dropdown.on_change = on_inventory_correction_template_change
         
         # Log Settings
         log_archive_years = get_log_archive_years()
@@ -460,6 +506,10 @@ class SettingsScreen:
             storage_receipt_template_dropdown,
             ft.Container(height=12),
             storage_transfer_template_dropdown,
+            ft.Container(height=12),
+            inventory_count_template_dropdown,
+            ft.Container(height=12),
+            inventory_correction_template_dropdown,
             ft.Container(height=24),
             ft.Divider(height=1),
             ft.Container(height=12),
@@ -1118,7 +1168,7 @@ class SettingsScreen:
         
         # GitHub Repository Settings
         github_owner = get_github_owner() or ""
-        github_repo = get_github_repo() or "Artence_CMMS"
+        github_repo = get_github_repo() or "ZedCMMSSystem"
         
         github_owner_field = create_modern_text_field(
             label="GitHub Owner / Felhasználónév vagy szervezet",
@@ -1129,7 +1179,7 @@ class SettingsScreen:
         
         github_repo_field = create_modern_text_field(
             label="GitHub Repository / Repository neve",
-            hint_text="pl.: Artence_CMMS",
+            hint_text="pl.: ZedCMMSSystem",
             value=github_repo,
             width=300,
         )
@@ -1401,11 +1451,48 @@ class SettingsScreen:
             update_status_text,
         ], spacing=8)
         
-        # About Section
+        # About Section with Easter Egg
+        # Easter egg trigger: 5 clicks on version within 2 seconds
+        version_click_count = {"count": 0, "last_click": 0}
+        
+        def on_version_click(e):
+            """Easter egg trigger - 5 clicks within 2 seconds"""
+            import time
+            current_time = time.time()
+            
+            # Reset if more than 2 seconds passed since last click
+            if current_time - version_click_count["last_click"] > 2:
+                version_click_count["count"] = 0
+            
+            version_click_count["count"] += 1
+            version_click_count["last_click"] = current_time
+            
+            # Activate easter egg after 5 clicks
+            if version_click_count["count"] >= 5:
+                version_click_count["count"] = 0  # Reset counter
+                # Launch Super Mario game!
+                try:
+                    game = SuperMarioGame()
+                    game.view(page)
+                except Exception as ex:
+                    print(f"[SETTINGS] Error launching easter egg: {ex}")
+                    import traceback
+                    traceback.print_exc()
+        
+        # Version text with click handler
+        version_text = ft.GestureDetector(
+            content=ft.Text(
+                f"Verzió / Version: {current_version}",
+                size=12,
+                color=DesignSystem.TEXT_SECONDARY
+            ),
+            on_tap=on_version_click,
+        )
+        
         about_section = ft.Column([
             ft.Text("Rendszer információk / System Information", size=16, weight=ft.FontWeight.BOLD),
             ft.Text(f"{APP_NAME}", size=14, weight=ft.FontWeight.BOLD),
-            ft.Text(f"Verzió / Version: {current_version}", size=12, color=DesignSystem.TEXT_SECONDARY),
+            version_text,
             ft.Text("© 2025 Artence CMMS", size=11, color=DesignSystem.TEXT_TERTIARY, italic=True),
         ], spacing=8)
         

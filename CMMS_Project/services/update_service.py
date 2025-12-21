@@ -70,12 +70,12 @@ class UpdateService:
             db_owner = get_github_owner()
             db_repo = get_github_repo()
             
-            self.github_owner = github_owner or db_owner or os.getenv("GITHUB_OWNER", "")
-            self.github_repo = github_repo or db_repo or os.getenv("GITHUB_REPO", "Artence_CMMS")
+            self.github_owner = github_owner or db_owner or os.getenv("GITHUB_OWNER", "zedinke")
+            self.github_repo = github_repo or db_repo or os.getenv("GITHUB_REPO", "ZedCMMSSystem")
         except Exception as e:
             logger.warning(f"Could not load GitHub settings from database: {e}")
-            self.github_owner = github_owner or os.getenv("GITHUB_OWNER", "")
-            self.github_repo = github_repo or os.getenv("GITHUB_REPO", "Artence_CMMS")
+            self.github_owner = github_owner or os.getenv("GITHUB_OWNER", "zedinke")
+            self.github_repo = github_repo or os.getenv("GITHUB_REPO", "ZedCMMSSystem")
         
         # Normalize values: strip whitespace and check for empty strings
         if self.github_owner:
@@ -200,6 +200,7 @@ class UpdateService:
     def _fetch_latest_release(self) -> Optional[Dict[str, Any]]:
         """
         Fetch latest release information from GitHub API
+        Falls back to tags if no releases are found
         
         Returns:
             Release data dictionary or None
@@ -227,9 +228,10 @@ class UpdateService:
                     
         except urllib.error.HTTPError as e:
             if e.code == 404:
-                logger.warning(f"No releases found on GitHub (404 Not Found)")
+                logger.info(f"No releases found on GitHub (404 Not Found), trying tags instead")
                 logger.info(f"  URL: {self.latest_release_url}")
-                logger.info(f"  This usually means the repository has no releases yet")
+                # Fallback to tags API
+                return self._fetch_latest_tag()
             elif e.code == 403:
                 logger.error(f"GitHub API access forbidden (403) - rate limit exceeded or repository is private")
                 logger.info(f"  URL: {self.latest_release_url}")
@@ -245,6 +247,122 @@ class UpdateService:
         except Exception as e:
             logger.error(f"Unexpected error fetching release: {e}", exc_info=True)
             logger.info(f"  URL: {self.latest_release_url}")
+            return None
+    
+    def _fetch_latest_tag(self) -> Optional[Dict[str, Any]]:
+        """
+        Fetch latest tag information from GitHub API
+        Used as fallback when no releases are available
+        
+        Returns:
+            Tag data dictionary formatted as release data or None
+        """
+        try:
+            tags_url = f"{self.api_base_url}/tags"
+            logger.debug(f"Fetching latest tag from: {tags_url}")
+            
+            request = urllib.request.Request(
+                tags_url,
+                headers={
+                    "User-Agent": "ArtenceCMMS-Updater/1.0",
+                    "Accept": "application/vnd.github.v3+json",
+                }
+            )
+            
+            with urllib.request.urlopen(request, timeout=10) as response:
+                if response.status == 200:
+                    tags = json.loads(response.read().decode())
+                    if not tags:
+                        logger.warning("No tags found in repository")
+                        return None
+                    
+                    # Get the first (latest) tag
+                    # Tags are usually sorted by creation date, but we'll sort by version
+                    from utils.version_utils import parse_version, compare_versions
+                    
+                    # Sort tags by version (descending)
+                    def tag_version_key(tag):
+                        tag_name = tag.get("name", "").lstrip("vV")
+                        major, minor, patch, _ = parse_version(tag_name)
+                        return (major, minor, patch)
+                    
+                    sorted_tags = sorted(tags, key=tag_version_key, reverse=True)
+                    latest_tag = sorted_tags[0]
+                    tag_name = latest_tag.get("name", "")
+                    
+                    logger.info(f"Found latest tag: {tag_name}")
+                    
+                    # Format as release data
+                    # Build download URL for installer from Git LFS
+                    # For Git LFS files, we need to use the GitHub API to get the download URL
+                    version = tag_name.lstrip("vV")
+                    # Try to get the file content URL from GitHub API
+                    file_path = f"CMMS_Project/installer/ZedCMMS_Setup_v{version}.exe"
+                    content_url = f"{self.api_base_url}/contents/{file_path}?ref={tag_name}"
+                    
+                    # First try to get the download URL from GitHub API
+                    download_url = None
+                    try:
+                        content_request = urllib.request.Request(
+                            content_url,
+                            headers={
+                                "User-Agent": "ArtenceCMMS-Updater/1.0",
+                                "Accept": "application/vnd.github.v3+json",
+                            }
+                        )
+                        with urllib.request.urlopen(content_request, timeout=10) as content_response:
+                            if content_response.status == 200:
+                                content_data = json.loads(content_response.read().decode())
+                                # For LFS files, GitHub provides download_url
+                                download_url = content_data.get("download_url")
+                                if download_url:
+                                    logger.info(f"Found download URL from GitHub API: {download_url[:50]}...")
+                    except Exception as e:
+                        logger.warning(f"Could not get download URL from GitHub API: {e}")
+                    
+                    # Fallback to raw URL if API didn't work
+                    if not download_url:
+                        download_url = f"https://github.com/{self.github_owner}/{self.github_repo}/raw/{tag_name}/{file_path}"
+                        logger.info(f"Using raw URL as fallback: {download_url[:50]}...")
+                    
+                    # Create release-like structure
+                    release_data = {
+                        "tag_name": tag_name,
+                        "name": tag_name,
+                        "published_at": latest_tag.get("commit", {}).get("sha", ""),  # Use commit SHA as fallback
+                        "body": f"Release {tag_name}",
+                        "assets": [
+                            {
+                                "name": f"ZedCMMS_Setup_v{version}.exe",
+                                "browser_download_url": download_url
+                            }
+                        ]
+                    }
+                    
+                    logger.debug(f"Formatted tag as release data (download URL: {download_url[:50]}...)")
+                    return release_data
+                else:
+                    logger.error(f"GitHub API returned status {response.status} (expected 200)")
+                    return None
+                    
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                logger.warning(f"No tags found on GitHub (404 Not Found)")
+                logger.info(f"  URL: {tags_url}")
+            elif e.code == 403:
+                logger.error(f"GitHub API access forbidden (403) - rate limit exceeded or repository is private")
+                logger.info(f"  URL: {tags_url}")
+            else:
+                logger.error(f"HTTP error fetching tags: {e.code} - {e.reason}")
+                logger.info(f"  URL: {tags_url}")
+            return None
+        except urllib.error.URLError as e:
+            logger.error(f"URL error fetching tags: {e.reason}")
+            logger.info(f"  URL: {tags_url}")
+            return None
+        except Exception as e:
+            logger.error(f"Unexpected error fetching tags: {e}", exc_info=True)
+            logger.info(f"  URL: {tags_url}")
             return None
     
     def _extract_download_url(self, release_data: Dict[str, Any]) -> Optional[str]:
