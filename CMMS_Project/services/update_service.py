@@ -171,6 +171,9 @@ class UpdateService:
             if not download_url:
                 logger.warning("No download URL found in release assets")
                 logger.info(f"  Release has {len(latest_release.get('assets', []))} asset(s)")
+                logger.info(f"  Release data keys: {list(latest_release.keys())}")
+                if latest_release.get('assets'):
+                    logger.info(f"  First asset keys: {list(latest_release['assets'][0].keys()) if latest_release['assets'] else 'No assets'}")
                 return None
             
             # Extract additional information
@@ -354,6 +357,11 @@ class UpdateService:
                         download_url = f"https://raw.githubusercontent.com/{self.github_owner}/{self.github_repo}/{tag_name}/{file_path}"
                         logger.info(f"Using raw GitHub URL as fallback: {download_url[:50]}...")
                     
+                    # Ensure we have a download URL
+                    if not download_url:
+                        logger.error(f"Could not construct download URL for tag {tag_name}")
+                        return None
+                    
                     # Create release-like structure
                     release_data = {
                         "tag_name": tag_name,
@@ -368,7 +376,8 @@ class UpdateService:
                         ]
                     }
                     
-                    logger.debug(f"Formatted tag as release data (download URL: {download_url[:50]}...)")
+                    logger.info(f"Formatted tag as release data (download URL: {download_url[:50]}...)")
+                    logger.debug(f"Release data structure: tag_name={release_data['tag_name']}, assets count={len(release_data['assets'])}")
                     return release_data
                 else:
                     logger.error(f"GitHub API returned status {response.status} (expected 200)")
@@ -405,17 +414,28 @@ class UpdateService:
             Download URL or None
         """
         assets = release_data.get("assets", [])
+        logger.debug(f"Extracting download URL from {len(assets)} asset(s)")
         
         # Look for installer .exe file
         for asset in assets:
             name = asset.get("name", "")
+            browser_download_url = asset.get("browser_download_url")
+            logger.debug(f"  Asset: {name}, URL: {browser_download_url[:50] if browser_download_url else 'None'}...")
             if name.endswith(".exe") and "Setup" in name:
-                return asset.get("browser_download_url")
+                if browser_download_url:
+                    logger.info(f"Found installer download URL: {browser_download_url[:50]}...")
+                    return browser_download_url
+                else:
+                    logger.warning(f"Asset {name} has no browser_download_url")
         
         # If no .exe found, return first asset URL
         if assets:
-            return assets[0].get("browser_download_url")
+            first_asset = assets[0]
+            first_url = first_asset.get("browser_download_url")
+            logger.info(f"Using first asset URL: {first_url[:50] if first_url else 'None'}...")
+            return first_url
         
+        logger.warning("No assets found in release data")
         return None
     
     def get_release_notes(self, version: str = None) -> Optional[str]:
