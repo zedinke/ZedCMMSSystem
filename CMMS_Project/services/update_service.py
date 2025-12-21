@@ -167,14 +167,21 @@ class UpdateService:
                 return None
             
             # Extract download URL from release assets
+            print(f"[UPDATE] Extracting download URL from release assets...")
             download_url = self._extract_download_url(latest_release)
             if not download_url:
+                print(f"[UPDATE] ERROR: No download URL found in release assets")
+                print(f"[UPDATE]   Release has {len(latest_release.get('assets', []))} asset(s)")
+                print(f"[UPDATE]   Release data keys: {list(latest_release.keys())}")
+                if latest_release.get('assets'):
+                    print(f"[UPDATE]   First asset keys: {list(latest_release['assets'][0].keys()) if latest_release['assets'] else 'No assets'}")
                 logger.warning("No download URL found in release assets")
                 logger.info(f"  Release has {len(latest_release.get('assets', []))} asset(s)")
                 logger.info(f"  Release data keys: {list(latest_release.keys())}")
                 if latest_release.get('assets'):
                     logger.info(f"  First asset keys: {list(latest_release['assets'][0].keys()) if latest_release['assets'] else 'No assets'}")
                 return None
+            print(f"[UPDATE] Download URL found: {download_url[:80]}...")
             
             # Extract additional information
             release_date = latest_release.get("published_at", "")
@@ -189,14 +196,20 @@ class UpdateService:
                 critical=critical,
             )
             
+            print(f"[UPDATE] SUCCESS: Update available: {latest_version}")
+            print(f"[UPDATE] Download URL: {download_url[:80]}...")
             logger.info(f"Update available: {latest_version} (download URL: {download_url[:50]}...)")
             return update_info
             
         except urllib.error.URLError as e:
+            print(f"[UPDATE] ERROR: Network error while checking for updates: {e}")
             logger.error(f"Network error while checking for updates: {e}")
             logger.debug(f"  URL attempted: {self.latest_release_url}", exc_info=True)
             return None
         except Exception as e:
+            print(f"[UPDATE] ERROR: Exception while checking for updates: {e}")
+            import traceback
+            print(f"[UPDATE] Traceback: {traceback.format_exc()}")
             logger.error(f"Error checking for updates: {e}", exc_info=True)
             return None
     
@@ -262,6 +275,7 @@ class UpdateService:
         """
         try:
             tags_url = f"{self.api_base_url}/tags"
+            print(f"[UPDATE] Fetching latest tag from: {tags_url}")
             logger.debug(f"Fetching latest tag from: {tags_url}")
             
             request = urllib.request.Request(
