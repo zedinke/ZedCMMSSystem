@@ -48,6 +48,13 @@ class InventoryCountScreen:
         self.count_detail = None
         self.content_container = None
         self.page = None
+        self.filter_status = None
+        self.filter_start_date = None
+        self.filter_end_date = None
+        self.search_query = ""
+        self.selected_items = []  # For batch operations
+        self.pagination_controller = None
+        self.polling_client = None
     
     def _create_view_details_handler(self, count_id):
         """Create a handler function for view details click to avoid lambda closure issues"""
@@ -78,13 +85,6 @@ class InventoryCountScreen:
         def handle_click(e):
             self._on_generate_document(e, doc_type)
         return handle_click
-        self.filter_status = None
-        self.filter_start_date = None
-        self.filter_end_date = None
-        self.search_query = ""
-        self.selected_items = []  # For batch operations
-        self.pagination_controller = None
-        self.polling_client = None
     
     def view(self, page: ft.Page):
         """Main view for inventory count screen"""
