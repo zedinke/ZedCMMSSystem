@@ -30,6 +30,11 @@ from ui.components.modern_card import (
     create_tailwind_card,
     create_info_card,
 )
+from ui.components.pagination import PaginationController, create_pagination_controls, create_items_per_page_selector
+from ui.components.selectable_list import SelectableList
+from ui.components.batch_actions_bar import create_batch_actions_bar
+from services.export_service import ExportService
+from services.autosave_service import get_autosave_service
 from config.roles import ROLE_MAINTENANCE_TECH, ROLE_MANAGER, ROLE_MAINTENANCE_SUPERVISOR, ROLE_DEVELOPER
 
 import logging
@@ -48,6 +53,10 @@ class ShiftScheduleScreen:
         self.view_mode = "calendar"  # "calendar" or "table"
         self.role_filter = ROLE_MAINTENANCE_TECH  # Default: only maintenance techs
         self.main_column = None
+        self.search_query = ""  # Search query for filtering users
+        self.selected_user_ids = set()  # Selected user IDs for batch operations
+        self.items_per_page = 20  # Default items per page
+        self.pagination_controller = None  # Will be initialized in view
         
     def view(self, page: ft.Page = None) -> ft.Control:
         """Build the shift schedule screen view"""
@@ -69,6 +78,14 @@ class ShiftScheduleScreen:
                         color=DS.PRIMARY,
                     ),
                     ft.Container(expand=True),
+                    # Export button (only for table view)
+                    create_modern_button(
+                        text=translator.get_text("common.buttons.export"),
+                        icon=ft.icons.DOWNLOAD,
+                        on_click=self._on_export_click,
+                        bgcolor=DS.INFO,
+                        width=150,
+                    ) if self.view_mode == "table" else ft.Container(width=0),
                 ],
                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
             ),
@@ -83,16 +100,23 @@ class ShiftScheduleScreen:
             key="year_text",  # Add key for easy reference
         )
         year_nav = ft.Row(
+            # Create wrapper functions to avoid lambda closure issues in PyInstaller
+            def handle_prev_year(e):
+                self._change_year(-1)
+            
+            def handle_next_year(e):
+                self._change_year(1)
+            
             controls=[
                 create_modern_button(
                     text="<",
-                    on_click=lambda e: self._change_year(-1),
+                    on_click=handle_prev_year,
                     width=50,
                 ),
                 year_text,
                 create_modern_button(
                     text=">",
-                    on_click=lambda e: self._change_year(1),
+                    on_click=handle_next_year,
                     width=50,
                 ),
             ],
@@ -125,16 +149,23 @@ class ShiftScheduleScreen:
             )
         
         # View mode toggle
+        # Create wrapper functions to avoid lambda closure issues in PyInstaller
+        def handle_switch_to_calendar(e):
+            self._switch_view("calendar")
+        
+        def handle_switch_to_table(e):
+            self._switch_view("table")
+        
         view_mode_toggle = ft.Row(
             controls=[
                 create_modern_button(
                     text=translator.get_text("shift_schedule.calendar_view") if hasattr(translator, 'get_text') else "Naptár / Calendar",
-                    on_click=lambda e: self._switch_view("calendar"),
+                    on_click=handle_switch_to_calendar,
                     bgcolor=DS.PRIMARY if self.view_mode == "calendar" else DS.BG_SECONDARY,
                 ),
                 create_modern_button(
                     text=translator.get_text("shift_schedule.table_view") if hasattr(translator, 'get_text') else "Táblázat / Table",
-                    on_click=lambda e: self._switch_view("table"),
+                    on_click=handle_switch_to_table,
                     bgcolor="#FFA500" if self.view_mode == "table" else "#FFA500",  # Orange color
                     color="#000000" if self.view_mode == "table" else "#000000",  # Black text
                 ),
@@ -142,6 +173,23 @@ class ShiftScheduleScreen:
             alignment=ft.MainAxisAlignment.CENTER,
             spacing=10,
         )
+        
+        # Search field (only for table view)
+        search_field = None
+        if self.view_mode == "table":
+            search_field = ft.Row(
+                controls=[
+                    create_modern_text_field(
+                        label=translator.get_text("common.search"),
+                        hint_text=translator.get_text("common.search_hint") if hasattr(translator, 'get_text') else "Keresés...",
+                        value=self.search_query,
+                        on_change=self._on_search_change,
+                        width=300,
+                        icon=ft.icons.SEARCH,
+                    ),
+                ],
+                spacing=10,
+            )
         
         # Build content based on view mode
         if self.view_mode == "calendar":
@@ -159,14 +207,22 @@ class ShiftScheduleScreen:
             ft.Container(height=10),
             view_mode_toggle,
             ft.Container(height=10),
-            current_schedule_card,
-            ft.Divider(),
-            content,
         ]
         
         # Add role filter if it exists
         if role_filter_control is not None:
-            main_controls.insert(3, role_filter_control)  # Insert after year_nav
+            main_controls.append(role_filter_control)
+        
+        # Add search field if in table view
+        if search_field:
+            main_controls.append(search_field)
+            main_controls.append(ft.Container(height=10))
+        
+        main_controls.extend([
+            current_schedule_card,
+            ft.Divider(),
+            content,
+        ])
         
         # Filter out any None values to prevent _build_add_commands errors
         main_controls = [c for c in main_controls if c is not None]
@@ -503,7 +559,7 @@ class ShiftScheduleScreen:
                         border_radius=4,
                         border=ft.border.all(2, border_color) if border_color else None,
                         alignment=ft.alignment.center,
-                        on_click=lambda e, d=current_date, u=users_info: self._show_day_details(d, u),
+                        on_click=self._create_day_details_handler(current_date, users_info),
                     )
                     week_row.controls.append(day_cell)
             
@@ -566,7 +622,7 @@ class ShiftScheduleScreen:
                         ft.DataCell(
                             create_modern_button(
                                 text=translator.get_text("shift_schedule.change_shift_for_day"),
-                                on_click=lambda e, uid=user_id, d=day: self._open_shift_override_dialog(d, uid),
+                                on_click=self._create_shift_override_handler(day, user_id) if user_id else None,
                                 width=150,
                             ) if user_id else ft.Container()
                         ),
@@ -782,17 +838,43 @@ class ShiftScheduleScreen:
         self.page.update()
     
     def _build_table_view(self) -> ft.Control:
-        """Build card-based view showing all users' shift schedules"""
+        """Build card-based view showing all users' shift schedules with pagination, search, and batch operations"""
         from services.user_service import get_user
         
         # Get all users
-        users = list_all_users()
+        all_users = list_all_users()
         
         # Filter by role if needed
         if self.role_filter:
-            users = [u for u in users if u.role and u.role.name == self.role_filter]
+            all_users = [u for u in all_users if u.role and u.role.name == self.role_filter]
         
-        if not users:
+        # Apply search filter
+        if self.search_query:
+            search_lower = self.search_query.lower()
+            filtered_users = []
+            for user in all_users:
+                user_name = (user.full_name or user.username or "").lower()
+                if search_lower in user_name:
+                    filtered_users.append(user)
+            all_users = filtered_users
+        
+        # Initialize pagination controller if not exists or total changed
+        total_users = len(all_users)
+        if self.pagination_controller is None or self.pagination_controller.total_items != total_users:
+            self.pagination_controller = PaginationController(
+                total_items=total_users,
+                items_per_page=self.items_per_page,
+                on_page_change=lambda: self._refresh_view(),
+            )
+        else:
+            self.pagination_controller.total_items = total_users
+        
+        # Get paginated users
+        start_idx = self.pagination_controller.start_index
+        end_idx = self.pagination_controller.end_index
+        users = all_users[start_idx:end_idx]
+        
+        if not users and total_users == 0:
             return create_empty_state_card(
                 icon=ft.Icons.SCHEDULE,
                 title="Nincs felhasználó / No users",
@@ -811,6 +893,24 @@ class ShiftScheduleScreen:
             except Exception as e:
                 logger.warning(f"Error checking user permissions: {e}")
                 can_manage_shifts = False
+        
+        # Batch actions bar
+        batch_actions_bar = None
+        if can_manage_shifts and self.selected_user_ids:
+            def on_batch_set_rotation():
+                self._batch_set_rotation()
+            
+            batch_actions_bar = create_batch_actions_bar(
+                selected_count=len(self.selected_user_ids),
+                actions=[
+                    {
+                        "text": translator.get_text("shift_schedule.set_rotation") if hasattr(translator, 'get_text') else "Rotáció beállítása",
+                        "icon": ft.icons.SCHEDULE,
+                        "on_click": on_batch_set_rotation,
+                        "bgcolor": DS.ORANGE_500,
+                    },
+                ],
+            )
         
         # Build cards grid
         cards_grid = ft.GridView(
@@ -882,29 +982,44 @@ class ShiftScheduleScreen:
             elif shift_type_key == "4_shift":
                 shift_color = DS.CYAN_500
             
+            # Selection checkbox and action button if user can manage shifts
+            checkbox = None
+            if can_manage_shifts:
+                is_selected = user.id in self.selected_user_ids
+                checkbox = ft.Checkbox(
+                    value=is_selected,
+                    on_change=lambda e, uid=user.id: self._on_user_selection_change(uid, e),
+                )
+            
             # Build card content
-            card_content_items = [
-                ft.Row([
-                    ft.Container(
-                        content=ft.Icon(ft.Icons.SCHEDULE, size=24, color=shift_color),
-                        padding=ft.padding.all(DesignSystem.SPACING_2),
-                        bgcolor=f"{shift_color}15",
-                        border_radius=DesignSystem.RADIUS_LG,
+            header_row_controls = []
+            if checkbox:
+                header_row_controls.append(checkbox)
+            
+            header_row_controls.extend([
+                ft.Container(
+                    content=ft.Icon(ft.Icons.SCHEDULE, size=24, color=shift_color),
+                    padding=ft.padding.all(DesignSystem.SPACING_2),
+                    bgcolor=f"{shift_color}15",
+                    border_radius=DesignSystem.RADIUS_LG,
+                ),
+                ft.Column([
+                    ft.Text(
+                        user_name,
+                        size=18,
+                        weight=ft.FontWeight.W_600,
+                        color=DesignSystem.TEXT_PRIMARY,
                     ),
-                    ft.Column([
-                        ft.Text(
-                            user_name,
-                            size=18,
-                            weight=ft.FontWeight.W_600,
-                            color=DesignSystem.TEXT_PRIMARY,
-                        ),
-                        create_vibrant_badge(
-                            text=shift_type_display,
-                            variant="blue",
-                            size=12,
-                        ),
-                    ], spacing=DesignSystem.SPACING_1, tight=True, expand=True),
-                ], spacing=DesignSystem.SPACING_3),
+                    create_vibrant_badge(
+                        text=shift_type_display,
+                        variant="blue",
+                        size=12,
+                    ),
+                ], spacing=DesignSystem.SPACING_1, tight=True, expand=True),
+            ])
+            
+            card_content_items = [
+                ft.Row(header_row_controls, spacing=DesignSystem.SPACING_3),
                 ft.Container(height=DesignSystem.SPACING_3),
                 ft.Column([
                     ft.Row([
@@ -954,14 +1069,15 @@ class ShiftScheduleScreen:
                 ], spacing=0, tight=True),
             ]
             
-            # Add action button if user can manage shifts
+            # Action button if user can manage shifts
             if can_manage_shifts:
                 action_button = create_modern_button(
                     text=translator.get_text("shift_schedule.set_rotation") if hasattr(translator, 'get_text') else "Rotáció beállítása",
-                    on_click=lambda e, uid=user.id: self._open_rotation_dialog(uid),
+                    on_click=self._create_rotation_handler(user.id),
                     width=180,
                     bgcolor=DS.ORANGE_500,
                 )
+                
                 card_content_items.append(
                     ft.Container(
                         content=action_button,
@@ -980,8 +1096,35 @@ class ShiftScheduleScreen:
             )
             cards_grid.controls.append(card)
         
+        # Build pagination controls
+        pagination_controls = create_pagination_controls(
+            controller=self.pagination_controller,
+        )
+        
+        items_per_page_selector = create_items_per_page_selector(
+            current_value=self.items_per_page,
+            on_change=self._on_items_per_page_change,
+        )
+        
+        # Build main content column
+        content_column = ft.Column(
+            controls=[
+                batch_actions_bar if batch_actions_bar else ft.Container(height=0),
+                cards_grid,
+                ft.Row(
+                    controls=[
+                        items_per_page_selector,
+                        ft.Container(expand=True),
+                        pagination_controls,
+                    ],
+                    spacing=10,
+                ),
+            ],
+            spacing=10,
+        )
+        
         return ft.Container(
-            content=cards_grid,
+            content=content_column,
             expand=True,
         )
     
@@ -1205,7 +1348,7 @@ class ShiftScheduleScreen:
         self.page.update()
     
     def _build_current_schedule_card(self) -> ft.Control:
-        """Build card showing current user's shift schedule with rotation settings"""
+        """Build card showing current user's shift schedule with rotation settings and autosave"""
         if not self.current_user:
             return ft.Container(
                 content=ft.Text(
@@ -1217,17 +1360,35 @@ class ShiftScheduleScreen:
                 padding=40,
             )
         
+        # Load draft if exists
+        autosave_service = get_autosave_service()
+        draft = autosave_service.load_draft("shift_schedule", self.current_user_id) if self.current_user_id else None
+        if draft:
+            draft = draft.get("form_data", {})
+        
         # Get current schedule
         current_schedule = get_user_shift_schedule(self.current_user_id, date.today())
         
-        # Get user's shift info - prioritize current_schedule over user defaults
+        # Get user's shift info - prioritize draft > current_schedule > user defaults
         shift_type = "single"
         shift_start = ""
         shift_end = ""
         rotation_start_date = None
         initial_shift = None
         
-        if current_schedule:
+        if draft:
+            # Use values from draft if available
+            shift_type = draft.get("shift_type", "single")
+            shift_start = draft.get("start_time", "")
+            shift_end = draft.get("end_time", "")
+            rotation_start_date_str = draft.get("rotation_start_date", "")
+            if rotation_start_date_str:
+                try:
+                    rotation_start_date = datetime.strptime(rotation_start_date_str, "%Y-%m-%d").date()
+                except ValueError:
+                    rotation_start_date = None
+            initial_shift = draft.get("initial_shift", None)
+        elif current_schedule:
             # Use values from current_schedule if available
             shift_type = current_schedule.shift_type or "single"
             shift_start = current_schedule.start_time or ""
@@ -1317,6 +1478,27 @@ class ShiftScheduleScreen:
         rotation_start_date_container.visible = is_3_shift
         initial_shift_field.visible = is_3_shift
         
+        # Autosave handler
+        def on_field_change():
+            """Handle field change for autosave"""
+            if not self.current_user_id:
+                return
+            draft_data = {
+                "shift_type": shift_type_field.value or "single",
+                "start_time": start_time_field.value or "",
+                "end_time": end_time_field.value or "",
+                "rotation_start_date": rotation_start_date_field.value or "",
+                "initial_shift": initial_shift_field.value or "DE",
+            }
+            autosave_service.save_draft("shift_schedule", draft_data, self.current_user_id)
+        
+        # Attach autosave handlers
+        shift_type_field.on_change = lambda e: (on_shift_type_change(e), on_field_change())
+        start_time_field.on_change = lambda e: on_field_change()
+        end_time_field.on_change = lambda e: on_field_change()
+        rotation_start_date_field.on_change = lambda e: on_field_change()
+        initial_shift_field.on_change = lambda e: on_field_change()
+        
         def save_schedule(e):
             try:
                 shift_type_val = shift_type_field.value
@@ -1351,6 +1533,9 @@ class ShiftScheduleScreen:
                     rotation_start_date=rotation_start_date_val,
                     initial_shift=initial_shift_val,
                 )
+                
+                # Clear draft after successful save
+                autosave_service.delete_draft("shift_schedule", self.current_user_id)
                 
                 self.page.snack_bar = ft.SnackBar(
                     content=ft.Text(translator.get_text("shift_schedule.schedule_saved")),
@@ -1416,3 +1601,329 @@ class ShiftScheduleScreen:
             ),
             padding=20,
         )
+    
+    def _on_search_change(self, e):
+        """Handle search query change"""
+        self.search_query = e.control.value or ""
+        # Reset to first page when searching
+        if self.pagination_controller:
+            self.pagination_controller.current_page = 1
+        self._refresh_view()
+    
+    def _on_items_per_page_change(self, value: int):
+        """Handle items per page change"""
+        self.items_per_page = value
+        if self.pagination_controller:
+            self.pagination_controller.items_per_page = value
+            self.pagination_controller.current_page = 1
+        self._refresh_view()
+    
+    def _on_user_selection_change(self, user_id: int, e):
+        """Handle user selection checkbox change"""
+        if e.control.value:
+            self.selected_user_ids.add(user_id)
+        else:
+            self.selected_user_ids.discard(user_id)
+        self._refresh_view()
+    
+    def _batch_set_rotation(self):
+        """Batch set rotation for selected users"""
+        if not self.selected_user_ids:
+            return
+        
+        # Open dialog to set rotation for multiple users
+        shift_type_field = create_modern_dropdown(
+            label=translator.get_text("shift_schedule.shift_type"),
+            options=[
+                ft.dropdown.Option(key="single", text=translator.get_text("shift_schedule.single_shift")),
+                ft.dropdown.Option(key="3_shift", text=translator.get_text("shift_schedule.3_shift")),
+                ft.dropdown.Option(key="4_shift", text=translator.get_text("shift_schedule.4_shift")),
+            ],
+            value="3_shift",
+            width=300,
+        )
+        
+        start_time_field = create_modern_text_field(
+            label=translator.get_text("shift_schedule.start_time"),
+            hint_text="06:00",
+            width=150,
+        )
+        
+        end_time_field = create_modern_text_field(
+            label=translator.get_text("shift_schedule.end_time"),
+            hint_text="14:00",
+            width=150,
+        )
+        
+        default_date_str = date.today().strftime("%Y-%m-%d")
+        rotation_start_date_container, rotation_start_date_field = create_modern_date_field(
+            label=translator.get_text("shift_schedule.rotation_start_date"),
+            value=default_date_str,
+            page=self.page,
+        )
+        
+        initial_shift_field = create_modern_dropdown(
+            label=translator.get_text("shift_schedule.initial_shift"),
+            options=[
+                ft.dropdown.Option("DE", translator.get_text("shift_schedule.shift_morning")),
+                ft.dropdown.Option("ÉJ", translator.get_text("shift_schedule.shift_night")),
+                ft.dropdown.Option("DU", translator.get_text("shift_schedule.shift_afternoon")),
+            ],
+            value="DE",
+            width=200,
+        )
+        
+        # Show/hide fields based on shift type
+        def on_shift_type_change(e):
+            is_single = e.control.value == "single"
+            is_3_shift = e.control.value == "3_shift"
+            start_time_field.visible = is_single
+            end_time_field.visible = is_single
+            rotation_start_date_container.visible = is_3_shift
+            initial_shift_field.visible = is_3_shift
+            self.page.update()
+        
+        shift_type_field.on_change = on_shift_type_change
+        start_time_field.visible = False
+        end_time_field.visible = False
+        rotation_start_date_container.visible = True
+        initial_shift_field.visible = True
+        
+        def save_batch_rotation(e):
+            try:
+                shift_type_val = shift_type_field.value
+                start_time_val = start_time_field.value if shift_type_val == "single" else None
+                end_time_val = end_time_field.value if shift_type_val == "single" else None
+                
+                # Parse rotation parameters for 3_shift
+                rotation_start_date_val = None
+                initial_shift_val = None
+                if shift_type_val == "3_shift":
+                    rotation_start_str = rotation_start_date_field.value or ""
+                    rotation_start_str = rotation_start_str.strip()
+                    if not rotation_start_str:
+                        rotation_start_date_val = date.today()
+                    else:
+                        try:
+                            rotation_start_date_val = datetime.strptime(rotation_start_str, "%Y-%m-%d").date()
+                        except ValueError:
+                            raise ShiftServiceError(f"Érvénytelen dátum formátum: {rotation_start_str}. Használja az YYYY-MM-DD formátumot.")
+                    
+                    initial_shift_val = initial_shift_field.value
+                    if not initial_shift_val or initial_shift_val not in ["DE", "ÉJ", "DU"]:
+                        raise ShiftServiceError("Kezdő műszak megadása kötelező 3 műszakos rendszerhez. Válasszon DE, ÉJ vagy DU közül.")
+                
+                # Apply to all selected users
+                success_count = 0
+                failed_count = 0
+                for user_id in list(self.selected_user_ids):
+                    try:
+                        set_user_shift_schedule(
+                            user_id=user_id,
+                            shift_type=shift_type_val,
+                            start_time=start_time_val,
+                            end_time=end_time_val,
+                            effective_from=datetime.now(),
+                            rotation_start_date=rotation_start_date_val,
+                            initial_shift=initial_shift_val,
+                        )
+                        success_count += 1
+                    except Exception as err:
+                        logger.error(f"Error setting shift schedule for user {user_id}: {err}")
+                        failed_count += 1
+                
+                self.selected_user_ids.clear()
+                self.page.dialog.open = False
+                self.page.update()
+                self._refresh_view()
+                
+                message = f"{success_count} {translator.get_text('shift_schedule.schedule_saved')}"
+                if failed_count > 0:
+                    message += f", {failed_count} {translator.get_text('common.messages.operation_failed')}"
+                
+                self.page.snack_bar = ft.SnackBar(
+                    content=ft.Text(message),
+                    bgcolor=DS.SUCCESS if failed_count == 0 else DS.WARNING,
+                )
+                self.page.snack_bar.open = True
+                self.page.update()
+            except ShiftServiceError as err:
+                self.page.snack_bar = ft.SnackBar(
+                    content=ft.Text(str(err)),
+                    bgcolor=DS.ERROR,
+                )
+                self.page.snack_bar.open = True
+                self.page.update()
+            except Exception as err:
+                import traceback
+                logger.error(f"Error saving batch shift schedule: {err}\n{traceback.format_exc()}")
+                self.page.snack_bar = ft.SnackBar(
+                    content=ft.Text(f"Hiba történt: {str(err)}"),
+                    bgcolor=DS.ERROR,
+                )
+                self.page.snack_bar.open = True
+                self.page.update()
+        
+        dialog_content = ft.Column(
+            controls=[
+                ft.Text(
+                    f"{len(self.selected_user_ids)} {translator.get_text('shift_schedule.user') if hasattr(translator, 'get_text') else 'Felhasználó'}",
+                    size=16,
+                    weight=ft.FontWeight.BOLD,
+                ),
+                ft.Divider(),
+                shift_type_field,
+                ft.Row(
+                    controls=[start_time_field, end_time_field],
+                    spacing=10,
+                ),
+                ft.Row(
+                    controls=[
+                        ft.Container(content=rotation_start_date_container, expand=True),
+                        ft.Container(content=initial_shift_field, width=200),
+                    ],
+                    spacing=10,
+                ),
+            ],
+            spacing=15,
+            width=500,
+        )
+        
+        dialog = ft.AlertDialog(
+            title=ft.Text(translator.get_text("shift_schedule.set_rotation") if hasattr(translator, 'get_text') else "Műszak rotáció beállítása"),
+            content=dialog_content,
+            actions=[
+                ft.TextButton(
+                    text=translator.get_text("common.buttons.cancel"),
+                    on_click=lambda _: setattr(self.page.dialog, "open", False) or self.page.update(),
+                ),
+                create_modern_button(
+                    text=translator.get_text("shift_schedule.save"),
+                    on_click=save_batch_rotation,
+                    bgcolor=DS.SUCCESS,
+                ),
+            ],
+        )
+        
+        self.page.dialog = dialog
+        dialog.open = True
+        self.page.update()
+    
+    def _on_export_click(self, e):
+        """Handle export button click"""
+        try:
+            # Get all users (not just current page)
+            all_users = list_all_users()
+            
+            # Filter by role if needed
+            if self.role_filter:
+                all_users = [u for u in all_users if u.role and u.role.name == self.role_filter]
+            
+            # Apply search filter if exists
+            if self.search_query:
+                search_lower = self.search_query.lower()
+                filtered_users = []
+                for user in all_users:
+                    user_name = (user.full_name or user.username or "").lower()
+                    if search_lower in user_name:
+                        filtered_users.append(user)
+                all_users = filtered_users
+            
+            # Prepare data for export
+            export_data = []
+            for user in all_users:
+                schedule = get_user_shift_schedule(user.id, date.today())
+                user_name = user.full_name or user.username
+                
+                shift_type_display = "-"
+                shift_time_display = "-"
+                rotation_info = "-"
+                
+                if schedule:
+                    shift_type_key = schedule.shift_type
+                    if shift_type_key == "triple":
+                        shift_type_key = "3_shift"
+                    elif shift_type_key == "double":
+                        shift_type_key = "4_shift"
+                    
+                    if shift_type_key == "single":
+                        shift_type_display = translator.get_text("shift_schedule.single_shift")
+                    elif shift_type_key in ["3_shift", "4_shift"]:
+                        shift_type_display = translator.get_text(f"shift_schedule.{shift_type_key}")
+                    
+                    if shift_type_key == "single" and schedule.start_time and schedule.end_time:
+                        shift_time_display = f"{schedule.start_time} - {schedule.end_time}"
+                    
+                    if shift_type_key == "3_shift" and schedule.rotation_start_date and schedule.initial_shift:
+                        rotation_info = f"{schedule.rotation_start_date.strftime('%Y-%m-%d')} ({schedule.initial_shift})"
+                
+                export_data.append({
+                    "ID": user.id,
+                    translator.get_text("shift_schedule.user"): user_name,
+                    translator.get_text("shift_schedule.shift_type"): shift_type_display,
+                    "Időszak / Time Period": shift_time_display,
+                    translator.get_text("shift_schedule.rotation_info") if hasattr(translator, 'get_text') else "Forgás / Rotation": rotation_info,
+                })
+            
+            # Export to CSV
+            csv_data = ExportService.export_to_csv(
+                data=export_data,
+                headers=list(export_data[0].keys()) if export_data else [],
+            )
+            
+            # Save file
+            def on_save_result(e: ft.FilePickerResultEvent):
+                try:
+                    if e.path:
+                        dest_path = e.path
+                        if not dest_path.endswith('.csv'):
+                            dest_path = dest_path + '.csv'
+                        
+                        with open(dest_path, 'wb') as f:
+                            f.write(csv_data)
+                        
+                        self.page.snack_bar = ft.SnackBar(
+                            content=ft.Text(f"{translator.get_text('common.buttons.export')} {translator.get_text('common.messages.operation_successful')}: {dest_path}"),
+                            bgcolor=DS.SUCCESS,
+                        )
+                        self.page.snack_bar.open = True
+                        self.page.update()
+                    else:
+                        self.page.snack_bar = ft.SnackBar(
+                            content=ft.Text(translator.get_text("worksheets.download_cancelled")),
+                            bgcolor=DS.INFO,
+                        )
+                        self.page.snack_bar.open = True
+                        self.page.update()
+                except Exception as ex:
+                    logger.error(f"Error saving export file: {ex}", exc_info=True)
+                    self.page.snack_bar = ft.SnackBar(
+                        content=ft.Text(f"{translator.get_text('common.messages.error_occurred')}: {str(ex)}"),
+                        bgcolor=DS.ERROR,
+                    )
+                    self.page.snack_bar.open = True
+                    self.page.update()
+            
+            # Create file picker for save dialog
+            file_picker = ft.FilePicker(
+                on_result=on_save_result
+            )
+            self.page.overlay.append(file_picker)
+            self.page.update()
+            
+            # Open save dialog
+            default_filename = f"shift_schedules_{self.current_year}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            file_picker.save_file(
+                dialog_title=translator.get_text("common.buttons.export"),
+                file_name=default_filename,
+                file_type=ft.FilePickerFileType.CUSTOM,
+                allowed_extensions=["csv"]
+            )
+        except Exception as ex:
+            logger.error(f"Error exporting shift schedules: {ex}", exc_info=True)
+            self.page.snack_bar = ft.SnackBar(
+                content=ft.Text(f"{translator.get_text('common.messages.error_occurred')}: {str(ex)}"),
+                bgcolor=DS.ERROR,
+            )
+            self.page.snack_bar.open = True
+            self.page.update()

@@ -3,6 +3,8 @@ Készlet képernyő (váz)
 """
 
 import flet as ft
+from datetime import datetime
+from pathlib import Path
 from services import inventory_service, asset_service
 from localization.translator import translator
 from utils.currency import format_price
@@ -19,6 +21,10 @@ from ui.components.modern_components import (
 from ui.components.modern_card import (
     create_tailwind_card,
 )
+from ui.components.pagination import PaginationController, create_pagination_controls, create_items_per_page_selector
+from ui.components.selectable_list import SelectableList
+from ui.components.batch_actions_bar import create_batch_actions_bar
+from ui.components.bulk_edit_dialog import create_bulk_edit_dialog
 
 
 class InventoryScreen:
@@ -32,7 +38,19 @@ class InventoryScreen:
         
         # Pagination settings
         ITEMS_PER_PAGE = 50  # Show 50 items per page for better performance
-        current_page_ref = {"value": 0}  # Use dict to allow modification in nested functions
+        
+        # Get total count for pagination
+        total_parts_count = inventory_service.count_parts()
+        
+        # Initialize PaginationController
+        pagination_controller = PaginationController(
+            total_items=total_parts_count,
+            items_per_page=ITEMS_PER_PAGE,
+            on_page_change=None,  # Will be set after refresh function is defined
+        )
+        
+        # Selected items for batch operations
+        selected_part_ids = set()
         
         # Parts list container
         parts_list = ft.Column([], spacing=8, scroll=ft.ScrollMode.AUTO, expand=True)
@@ -40,15 +58,275 @@ class InventoryScreen:
         # Group by selection (default: "all" - no grouping)
         group_by_ref = {"value": "all"}  # "all", "production_line", "machine"
         
-        # Pagination controls (will be updated dynamically)
-        page_info_text = ft.Text(
-            "",
-            size=12,
-            color=DesignSystem.TEXT_SECONDARY,
+        # Selection change handler (defined before create_part_card to avoid forward reference issues)
+        batch_actions_bar_ref = {"value": None}  # Reference to batch actions bar
+        
+        def _on_part_selection_change(part_id, e):
+            """Handle part selection checkbox change"""
+            if e.control.value:
+                selected_part_ids.add(part_id)
+            else:
+                selected_part_ids.discard(part_id)
+            
+            # Update batch actions bar visibility
+            _update_batch_actions_bar()
+            page.update()
+        
+        def _clear_selection():
+            """Clear all selections"""
+            selected_part_ids.clear()
+            refresh_parts_list(update_page=True)
+            _update_batch_actions_bar()
+            page.update()
+        
+        def _select_all():
+            """Select all parts on current page"""
+            # Get current page parts
+            offset = pagination_controller.start_index
+            limit = pagination_controller.items_per_page
+            all_parts = inventory_service.list_parts(limit=limit, offset=offset)
+            for part in all_parts:
+                selected_part_ids.add(part.id)
+            refresh_parts_list(update_page=True)
+            _update_batch_actions_bar()
+            page.update()
+        
+        def _update_batch_actions_bar():
+            """Update batch actions bar visibility and content"""
+            selected_count = len(selected_part_ids)
+            
+            if batch_actions_bar_ref["value"]:
+                batch_actions_bar_ref["value"].visible = selected_count > 0
+                if selected_count > 0:
+                    # Update the bar content
+                    batch_actions_bar_ref["value"].content = _create_batch_actions_bar_content()
+                page.update()
+        
+        def _create_batch_actions_bar_content():
+            """Create batch actions bar content"""
+            selected_count = len(selected_part_ids)
+            
+            def on_batch_delete():
+                """Delete selected parts"""
+                if not selected_part_ids:
+                    return
+                
+                from ui.components.confirmation_dialogs import create_delete_confirmation_dialog
+                
+                def confirm_delete():
+                    try:
+                        deleted_count = 0
+                        for part_id in list(selected_part_ids):
+                            try:
+                                inventory_service.delete_part(part_id)
+                                deleted_count += 1
+                            except Exception as e:
+                                print(f"Error deleting part {part_id}: {e}")
+                        
+                        selected_part_ids.clear()
+                        refresh_parts_list(update_page=True)
+                        _update_batch_actions_bar()
+                        page.snack_bar = ft.SnackBar(
+                            content=ft.Text(f"{deleted_count} {translator.get_text('inventory.parts')} törölve"),
+                            bgcolor=DesignSystem.SUCCESS,
+                        )
+                        page.snack_bar.open = True
+                        page.update()
+                    except Exception as e:
+                        page.snack_bar = ft.SnackBar(
+                            content=ft.Text(f"Hiba: {e}"),
+                            bgcolor=DesignSystem.ERROR,
+                        )
+                        page.snack_bar.open = True
+                        page.update()
+                
+                dialog = create_delete_confirmation_dialog(
+                    page=page,
+                    entity_name=f"{selected_count} {translator.get_text('inventory.parts')}",
+                    on_confirm=confirm_delete,
+                )
+                page.dialog = dialog
+                dialog.open = True
+                page.update()
+            
+            def on_batch_export():
+                """Export selected parts"""
+                if not selected_part_ids:
+                    return
+                
+                try:
+                    from services.export_service import ExportService
+                    parts = [inventory_service.get_part(part_id) for part_id in selected_part_ids]
+                    
+                    # Convert parts to dict format
+                    parts_data = []
+                    for part in parts:
+                        inv_level = inventory_service.get_inventory_level(part.id)
+                        parts_data.append({
+                            "ID": part.id,
+                            "Név": part.name,
+                            "SKU": part.sku or "",
+                            "Kategória": part.category or "",
+                            "Készlet": inv_level.quantity_on_hand if inv_level else 0,
+                            "Egység": part.unit or "",
+                            "Beszerzési ár": part.buy_price or 0,
+                            "Raktárhely": inv_level.bin_location if inv_level and inv_level.bin_location else "",
+                        })
+                    
+                    # Export to CSV
+                    csv_data = ExportService.export_to_csv(
+                        data=parts_data,
+                        headers=["ID", "Név", "SKU", "Kategória", "Készlet", "Egység", "Beszerzési ár", "Raktárhely"],
+                    )
+                    
+                    # Save file
+                    filename = f"inventory_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+                    file_path = Path.home() / "Downloads" / filename
+                    file_path.parent.mkdir(parents=True, exist_ok=True)
+                    file_path.write_bytes(csv_data)
+                    
+                    page.snack_bar = ft.SnackBar(
+                        content=ft.Text(f"{len(parts)} {translator.get_text('inventory.parts')} exportálva: {file_path}"),
+                        bgcolor=DesignSystem.SUCCESS,
+                    )
+                    page.snack_bar.open = True
+                    page.update()
+                except Exception as e:
+                    page.snack_bar = ft.SnackBar(
+                        content=ft.Text(f"Export hiba: {e}"),
+                        bgcolor=DesignSystem.ERROR,
+                    )
+                    page.snack_bar.open = True
+                    page.update()
+            
+            def on_batch_edit():
+                """Open bulk edit dialog for selected parts"""
+                if not selected_part_ids:
+                    return
+                
+                try:
+                    from ui.components.bulk_edit_dialog import create_bulk_edit_dialog
+                    parts = [inventory_service.get_part(part_id) for part_id in selected_part_ids]
+                    
+                    # Define fields for bulk edit
+                    fields = [
+                        {
+                            "key": "category",
+                            "label": translator.get_text("inventory.category"),
+                            "type": "text",
+                            "required": False,
+                        },
+                        {
+                            "key": "bin_location",
+                            "label": translator.get_text("inventory.location_bin"),
+                            "type": "text",
+                            "required": False,
+                        },
+                        {
+                            "key": "unit",
+                            "label": translator.get_text("inventory.unit"),
+                            "type": "text",
+                            "required": False,
+                        },
+                    ]
+                    
+                    def on_bulk_save(items, changes):
+                        """Save bulk updates"""
+                        try:
+                            updated_count = 0
+                            for part in items:
+                                try:
+                                    update_data = {}
+                                    
+                                    if 'category' in changes and changes['category']:
+                                        update_data['category'] = changes['category']
+                                    if 'bin_location' in changes and changes['bin_location']:
+                                        update_data['bin_location'] = changes['bin_location']
+                                    if 'unit' in changes and changes['unit']:
+                                        update_data['unit'] = changes['unit']
+                                    
+                                    if update_data:
+                                        inventory_service.update_part(
+                                            part_id=part.id,
+                                            **update_data,
+                                            change_reason="Bulk edit"
+                                        )
+                                        updated_count += 1
+                                except Exception as e:
+                                    print(f"Error updating part {part.id}: {e}")
+                            
+                            selected_part_ids.clear()
+                            refresh_parts_list(update_page=True)
+                            _update_batch_actions_bar()
+                            page.snack_bar = ft.SnackBar(
+                                content=ft.Text(f"{updated_count} {translator.get_text('inventory.parts')} frissítve"),
+                                bgcolor=DesignSystem.SUCCESS,
+                            )
+                            page.snack_bar.open = True
+                            page.update()
+                        except Exception as e:
+                            page.snack_bar = ft.SnackBar(
+                                content=ft.Text(f"Hiba: {e}"),
+                                bgcolor=DesignSystem.ERROR,
+                            )
+                            page.snack_bar.open = True
+                            page.update()
+                    
+                    dialog = create_bulk_edit_dialog(
+                        page=page,
+                        selected_items=parts,
+                        fields=fields,
+                        on_save=on_bulk_save,
+                    )
+                    if dialog:
+                        page.dialog = dialog
+                        dialog.open = True
+                        page.update()
+                except Exception as e:
+                    page.snack_bar = ft.SnackBar(
+                        content=ft.Text(f"Hiba: {e}"),
+                        bgcolor=DesignSystem.ERROR,
+                    )
+                    page.snack_bar.open = True
+                    page.update()
+            
+            actions = [
+                {
+                    "label": translator.get_text("common.buttons.delete"),
+                    "icon": ft.Icons.DELETE,
+                    "on_click": lambda e: on_batch_delete(),
+                    "color": DesignSystem.ERROR,
+                },
+                {
+                    "label": translator.get_text("common.buttons.export"),
+                    "icon": ft.Icons.DOWNLOAD,
+                    "on_click": lambda e: on_batch_export(),
+                    "color": DesignSystem.BLUE_500,
+                },
+                {
+                    "label": translator.get_text("common.buttons.edit"),
+                    "icon": ft.Icons.EDIT,
+                    "on_click": lambda e: on_batch_edit(),
+                    "color": DesignSystem.BLUE_500,
+                },
+            ]
+            
+            return create_batch_actions_bar(
+                selected_count=selected_count,
+                actions=actions,
+                on_clear_selection=_clear_selection,
+                page=page,
+            )
+        
+        # Create batch actions bar container
+        batch_actions_bar_container = ft.Container(
+            content=_create_batch_actions_bar_content(),
+            visible=False,
         )
+        batch_actions_bar_ref["value"] = batch_actions_bar_container
         
         def create_part_card(part, inv_level=None):
-            """Helper function to create a part card"""
+            """Helper function to create a part card with checkbox for multi-select"""
             # Get inventory level
             if inv_level:
                 stock_qty = inv_level.quantity_on_hand
@@ -63,25 +341,47 @@ class InventoryScreen:
             if len(compatible_machines) > 3:
                 machines_text += f" +{len(compatible_machines) - 3} további"
             
+            # Create wrapper functions to avoid lambda closure issues in PyInstaller
+            def handle_receive_stock(e):
+                open_receive_stock_dialog(part)
+            
+            def handle_edit_part(e):
+                open_edit_part_dialog(part)
+            
+            def handle_delete_part(e):
+                open_delete_part_dialog(part)
+            
+            # Create checkbox for multi-select
+            part_checkbox = ft.Checkbox(
+                value=part.id in selected_part_ids,
+                on_change=lambda e, p_id=part.id: _on_part_selection_change(p_id, e),
+                tooltip=translator.get_text("common.select") if hasattr(translator, 'get_text') else "Select",
+            )
+            
             # Create Tailwind CSS card for each part
             stock_badge_variant = "emerald" if stock_qty > 0 else None
             
             card_content = ft.Column([
                 ft.Row([
+                    part_checkbox,
+                    ft.Container(width=8),  # Spacing between checkbox and content
                     ft.Column([
-                        ft.Row([
-                            ft.Text(
-                                part.name,
-                                size=18,
-                                weight=ft.FontWeight.W_600,
-                                color=DesignSystem.TEXT_PRIMARY,
-                            ),
-                            create_vibrant_badge(
-                                text=part.sku,
-                                variant="blue",
-                                size=11,
-                            ) if part.sku else None,
-                        ], spacing=DesignSystem.SPACING_2),
+                        ft.Row(
+                            controls=[c for c in [
+                                ft.Text(
+                                    part.name,
+                                    size=18,
+                                    weight=ft.FontWeight.W_600,
+                                    color=DesignSystem.TEXT_PRIMARY,
+                                ),
+                                create_vibrant_badge(
+                                    text=part.sku,
+                                    variant="blue",
+                                    size=11,
+                                ) if part.sku else None,
+                            ] if c is not None],
+                            spacing=DesignSystem.SPACING_2
+                        ),
                         ft.Container(height=DesignSystem.SPACING_2),
                         ft.Row([
                             ft.Text(
@@ -116,18 +416,18 @@ class InventoryScreen:
                             ),
                         ], spacing=DesignSystem.SPACING_2),
                         ft.Container(height=DesignSystem.SPACING_1),
-                        ft.Text(
+                        *([ft.Text(
                             f"{translator.get_text('inventory.compatible_machines')}: {machines_text or '-'}",
                             size=12,
                             color=DesignSystem.TEXT_TERTIARY,
                             italic=True,
-                        ) if machines_text else None,
+                        )] if machines_text else []),
                     ], expand=True, spacing=0),
                     ft.Row([
                         create_modern_icon_button(
                             icon=ft.Icons.ADD,
                             tooltip=translator.get_text("inventory.receive_stock"),
-                            on_click=lambda e, p=part: open_receive_stock_dialog(p),
+                            on_click=handle_receive_stock,
                             color=DesignSystem.EMERALD_500,
                             vibrant=True,
                             variant="emerald",
@@ -135,7 +435,7 @@ class InventoryScreen:
                         create_modern_icon_button(
                             icon=ft.Icons.EDIT,
                             tooltip=translator.get_text("common.buttons.edit"),
-                            on_click=lambda e, p=part: open_edit_part_dialog(p),
+                            on_click=handle_edit_part,
                             color=DesignSystem.BLUE_500,
                             vibrant=True,
                             variant="blue",
@@ -143,7 +443,7 @@ class InventoryScreen:
                         create_modern_icon_button(
                             icon=ft.Icons.DELETE,
                             tooltip=translator.get_text("common.buttons.delete"),
-                            on_click=lambda e, p=part: open_delete_part_dialog(p),
+                            on_click=handle_delete_part,
                             color=DesignSystem.RED_500,
                             vibrant=True,
                             variant="red",
@@ -152,10 +452,17 @@ class InventoryScreen:
                 ], spacing=DesignSystem.SPACING_3),
             ], spacing=0)
             
-            # Filter None values
-            card_content.controls = [c for c in card_content.controls if c is not None]
-            if hasattr(card_content.controls[0], 'controls'):
-                card_content.controls[0].controls = [c for c in card_content.controls[0].controls if c is not None]
+            # Filter None values recursively from all controls
+            def filter_none_recursive(ctrl):
+                if ctrl is None:
+                    return None
+                if hasattr(ctrl, 'controls') and isinstance(ctrl.controls, list):
+                    ctrl.controls = [c for c in ctrl.controls if c is not None]
+                    for child in ctrl.controls:
+                        filter_none_recursive(child)
+                return ctrl
+            
+            card_content.controls = [filter_none_recursive(c) for c in card_content.controls if c is not None]
             
             card = create_tailwind_card(
                 content=card_content,
@@ -166,10 +473,12 @@ class InventoryScreen:
             return card
         
         def refresh_parts_list(update_page=True, page_num=None):
-            if page_num is None:
-                page_num = current_page_ref["value"]
-            else:
-                current_page_ref["value"] = page_num
+            # Update pagination controller if page_num is provided and update_page is False
+            # If update_page is True, the page change was already triggered by the callback
+            if page_num is not None and not update_page:
+                # Convert 0-based to 1-based for PaginationController
+                pagination_controller.go_to_page(page_num + 1)
+            
             # Don't update if dialog is open
             page_ref = self.page if hasattr(self, 'page') and self.page else page
             if hasattr(page_ref, 'dialog') and page_ref.dialog is not None:
@@ -200,6 +509,10 @@ class InventoryScreen:
             
             # Clear parts list
             parts_list.controls.clear()
+            
+            # Update total count
+            total_parts_count = inventory_service.count_parts()
+            pagination_controller.update_total_items(total_parts_count)
             
             group_by_mode = group_by_ref["value"]
             
@@ -420,25 +733,17 @@ class InventoryScreen:
                             )
                         )
                     
-                    # Update page info (no pagination when grouping)
-                    total_parts_count = len(parts)
-                    page_info_text.value = f"Összesen / Total: {total_parts_count}"
+                    # No pagination info update needed when grouping (all parts shown)
                     
                 finally:
                     session.close()
             
             else:
                 # Original behavior: no grouping, with pagination
-                offset = page_num * ITEMS_PER_PAGE
-                parts = inventory_service.list_parts(limit=ITEMS_PER_PAGE, offset=offset)
-                
-                # Update page info
-                total_parts_count = inventory_service.count_parts()
-                total_pages = (total_parts_count + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE if total_parts_count > 0 else 1
-                if total_pages > 1:
-                    page_info_text.value = f"Oldal / Page: {page_num + 1} / {total_pages} | Összesen / Total: {total_parts_count}"
-                else:
-                    page_info_text.value = f"Összesen / Total: {total_parts_count}"
+                # Use PaginationController for pagination
+                offset = pagination_controller.start_index
+                limit = pagination_controller.items_per_page
+                parts = inventory_service.list_parts(limit=limit, offset=offset)
                 
                 if not parts:
                     parts_list.controls.append(
@@ -1145,91 +1450,43 @@ class InventoryScreen:
                 dialog_page.dialog = dialog
                 dialog.open = True
                 dialog_page.update()
-
+        
+        # Set up pagination controller callback
+        def on_page_change(page_num):
+            # page_num is 1-based from PaginationController
+            # Convert to 0-based for refresh_parts_list
+            refresh_parts_list(update_page=True, page_num=page_num - 1)
+            page.update()
+        
+        pagination_controller.on_page_change = on_page_change
+        
         # Initial load
         refresh_parts_list(update_page=False, page_num=0)
         
-        # Get total count for pagination
-        total_parts_count = inventory_service.count_parts()
-        total_pages = (total_parts_count + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE if total_parts_count > 0 else 1
-        
-        # Pagination navigation functions
-        def go_to_page(page_num):
-            if 0 <= page_num < total_pages:
-                current_page_ref["value"] = page_num
-                refresh_parts_list(update_page=False, page_num=page_num)
-                # Update pagination button states
-                update_pagination_buttons()
-                page.update()
-        
-        def next_page(e):
-            current = current_page_ref["value"]
-            total = (inventory_service.count_parts() + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE if inventory_service.count_parts() > 0 else 1
-            if current < total - 1:
-                go_to_page(current + 1)
-        
-        def prev_page(e):
-            current = current_page_ref["value"]
-            if current > 0:
-                go_to_page(current - 1)
-        
-        def first_page(e):
-            go_to_page(0)
-        
-        def last_page(e):
-            total = (inventory_service.count_parts() + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE if inventory_service.count_parts() > 0 else 1
-            go_to_page(total - 1)
-        
-        # Pagination buttons (will be updated)
-        first_btn = create_modern_button(
-            text="<<",
-            tooltip="Első oldal / First page",
-            on_click=first_page,
-            disabled=True,
-            width=50,
-        )
-        prev_btn = create_modern_button(
-            text="<",
-            tooltip="Előző oldal / Previous page",
-            on_click=prev_page,
-            disabled=True,
-            width=50,
-        )
-        next_btn = create_modern_button(
-            text=">",
-            tooltip="Következő oldal / Next page",
-            on_click=next_page,
-            disabled=True,
-            width=50,
-        )
-        last_btn = create_modern_button(
-            text=">>",
-            tooltip="Utolsó oldal / Last page",
-            on_click=last_page,
-            disabled=True,
-            width=50,
+        # Create pagination controls using standard component
+        pagination_controls = create_pagination_controls(
+            controller=pagination_controller,
+            show_page_numbers=True,
+            max_page_buttons=7,
         )
         
-        def update_pagination_buttons():
-            """Update pagination button states"""
-            current = current_page_ref["value"]
-            total = (inventory_service.count_parts() + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE if inventory_service.count_parts() > 0 else 1
-            first_btn.disabled = current == 0
-            prev_btn.disabled = current == 0
-            next_btn.disabled = current >= total - 1
-            last_btn.disabled = current >= total - 1
+        # Create items per page selector
+        items_per_page_selector = create_items_per_page_selector(
+            controller=pagination_controller,
+            options=[10, 25, 50, 100],
+        )
         
-        # Pagination controls
+        # Update pagination when items per page changes
+        def on_items_per_page_change():
+            refresh_parts_list(update_page=True)
+            page.update()
+        
+        # Wrap pagination controls in a container
         pagination_row = ft.Row([
-            first_btn,
-            prev_btn,
-            page_info_text,
-            next_btn,
-            last_btn,
-        ], alignment=ft.MainAxisAlignment.CENTER, spacing=DesignSystem.SPACING_2) if total_pages > 1 else ft.Container()
-        
-        # Initial button state update
-        update_pagination_buttons()
+            pagination_controls,
+            ft.Container(width=DesignSystem.SPACING_4),
+            items_per_page_selector,
+        ], alignment=ft.MainAxisAlignment.CENTER, spacing=DesignSystem.SPACING_2) if pagination_controller.total_pages > 1 else ft.Container()
 
         # Create add button
         add_btn = create_modern_button(
@@ -1257,18 +1514,40 @@ class InventoryScreen:
         # Pagination row - only show when not grouping
         def get_pagination_row():
             if group_by_ref["value"] == "all":
-                return pagination_row if total_pages > 1 else ft.Container()
+                return pagination_row if pagination_controller.total_pages > 1 else ft.Container()
             else:
                 return ft.Container()
         
+        # Select all checkbox (only show when not grouping)
+        select_all_checkbox = ft.Checkbox(
+            value=False,
+            on_change=lambda e: (_select_all() if e.control.value else _clear_selection()),
+            tooltip=translator.get_text("common.select_all") if hasattr(translator, 'get_text') else "Select All",
+        )
+        
+        def get_header_row():
+            """Get header row with select all checkbox (only when not grouping)"""
+            if group_by_ref["value"] == "all":
+                return ft.Row([
+                    select_all_checkbox,
+                    ft.Text(translator.get_text("inventory.parts"), size=18, weight=ft.FontWeight.BOLD),
+                    ft.Container(expand=True),
+                    group_by_dropdown,
+                    ft.Container(width=DesignSystem.SPACING_2),
+                    add_btn,
+                ], vertical_alignment=ft.CrossAxisAlignment.CENTER)
+            else:
+                return ft.Row([
+                    ft.Text(translator.get_text("inventory.parts"), size=18, weight=ft.FontWeight.BOLD),
+                    ft.Container(expand=True),
+                    group_by_dropdown,
+                    ft.Container(width=DesignSystem.SPACING_2),
+                    add_btn,
+                ], vertical_alignment=ft.CrossAxisAlignment.CENTER)
+        
         return ft.Column([
-            ft.Row([
-                ft.Text(translator.get_text("inventory.parts"), size=18, weight=ft.FontWeight.BOLD),
-                ft.Container(expand=True),
-                group_by_dropdown,
-                ft.Container(width=DesignSystem.SPACING_2),
-                add_btn,
-            ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
+            get_header_row(),
+            batch_actions_bar_container,
             get_pagination_row(),
             parts_list,
             get_pagination_row(),

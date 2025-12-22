@@ -41,6 +41,438 @@ class ProductionLineScreen:
         self.selected_items = []  # For batch operations
         self.pagination_controller = None
     
+    def _open_create_dialog(self, e=None, refresh_callback=None):
+        """Open dialog to create a new production line"""
+        print("[PRODUCTION_LINE] ========================================")
+        print(f"[PRODUCTION_LINE] _open_create_dialog() called, event: {e}")
+        logger.debug("_open_create_dialog() called")
+        
+        if not hasattr(self, 'page') or not self.page:
+            print("[PRODUCTION_LINE] ERROR: self.page is not available")
+            return
+        
+        dialog_page = self.page
+        print(f"[PRODUCTION_LINE] dialog_page: {dialog_page}, type: {type(dialog_page)}")
+        
+        print("[PRODUCTION_LINE] Creating form fields...")
+        try:
+            print("[PRODUCTION_LINE] Creating name_field...")
+            name_label = translator.get_text("production_line.name") if translator.get_text("production_line.name") != "production_line.name" else "Név"
+            print(f"[PRODUCTION_LINE] name_label: {name_label}")
+            name_field = create_modern_text_field(
+                label=name_label,
+            )
+            print(f"[PRODUCTION_LINE] name_field created: {name_field}, type: {type(name_field)}")
+        except Exception as e:
+            print(f"[PRODUCTION_LINE] ERROR creating name_field: {e}")
+            import traceback
+            traceback.print_exc()
+            return
+        
+        try:
+            print("[PRODUCTION_LINE] Creating description_field...")
+            description_label = translator.get_text("production_line.description") if translator.get_text("production_line.description") != "production_line.description" else "Leírás"
+            print(f"[PRODUCTION_LINE] description_label: {description_label}")
+            description_field = create_modern_text_field(
+                label=description_label,
+                multiline=True,
+                max_lines=5,
+            )
+            print(f"[PRODUCTION_LINE] description_field created: {description_field}, type: {type(description_field)}")
+        except Exception as e:
+            print(f"[PRODUCTION_LINE] ERROR creating description_field: {e}")
+            import traceback
+            traceback.print_exc()
+            return
+        
+        try:
+            print("[PRODUCTION_LINE] Creating location_field...")
+            location_field = create_modern_text_field(
+                label=translator.get_text("production_line.location") if translator.get_text("production_line.location") != "production_line.location" else "Helyszín",
+            )
+            print(f"[PRODUCTION_LINE] location_field created: {location_field}, type: {type(location_field)}")
+        except Exception as e:
+            print(f"[PRODUCTION_LINE] ERROR creating location_field: {e}")
+            import traceback
+            traceback.print_exc()
+            return
+        
+        try:
+            print("[PRODUCTION_LINE] Creating code_field...")
+            code_field = create_modern_text_field(
+                label=translator.get_text("production_line.code") if translator.get_text("production_line.code") != "production_line.code" else "Kód",
+            )
+            print(f"[PRODUCTION_LINE] code_field created: {code_field}, type: {type(code_field)}")
+        except Exception as e:
+            print(f"[PRODUCTION_LINE] ERROR creating code_field: {e}")
+            import traceback
+            traceback.print_exc()
+            return
+        
+        try:
+            print("[PRODUCTION_LINE] Creating status_field...")
+            status_options = [
+                ft.dropdown.Option(
+                    "Active",
+                    translator.get_text("production_line.status_active") if translator.get_text("production_line.status_active") != "production_line.status_active" else "Aktív"
+                ),
+                ft.dropdown.Option(
+                    "Inactive",
+                    translator.get_text("production_line.status_inactive") if translator.get_text("production_line.status_inactive") != "production_line.status_inactive" else "Inaktív"
+                ),
+                ft.dropdown.Option(
+                    "Maintenance",
+                    translator.get_text("production_line.status_maintenance") if translator.get_text("production_line.status_maintenance") != "production_line.status_maintenance" else "Karbantartás"
+                ),
+            ]
+            status_field = create_modern_dropdown(
+                label=translator.get_text("production_line.status") if translator.get_text("production_line.status") != "production_line.status" else "Státusz",
+                options=status_options,
+                value="Active",
+            )
+            print(f"[PRODUCTION_LINE] status_field created: {status_field}, type: {type(status_field)}")
+        except Exception as e:
+            print(f"[PRODUCTION_LINE] ERROR creating status_field: {e}")
+            import traceback
+            traceback.print_exc()
+            return
+        
+        try:
+            print("[PRODUCTION_LINE] Creating capacity_field...")
+            capacity_field = create_modern_text_field(
+                label=translator.get_text("production_line.capacity") if translator.get_text("production_line.capacity") != "production_line.capacity" else "Kapacitás",
+            )
+            print(f"[PRODUCTION_LINE] capacity_field created: {capacity_field}, type: {type(capacity_field)}")
+        except Exception as e:
+            print(f"[PRODUCTION_LINE] ERROR creating capacity_field: {e}")
+            import traceback
+            traceback.print_exc()
+            return
+        
+        try:
+            print("[PRODUCTION_LINE] Creating responsible_person_field...")
+            responsible_person_field = create_modern_text_field(
+                label=translator.get_text("production_line.responsible_person") if translator.get_text("production_line.responsible_person") != "production_line.responsible_person" else "Felelős személy",
+            )
+            print(f"[PRODUCTION_LINE] responsible_person_field created: {responsible_person_field}, type: {type(responsible_person_field)}")
+        except Exception as e:
+            print(f"[PRODUCTION_LINE] ERROR creating responsible_person_field: {e}")
+            import traceback
+            traceback.print_exc()
+            return
+        
+        try:
+            print("[PRODUCTION_LINE] Creating commission_date_field...")
+            commission_date_row, commission_date_field = create_modern_date_field(
+                label=translator.get_text("production_line.commission_date") if translator.get_text("production_line.commission_date") != "production_line.commission_date" else "Üzembe helyezési dátum",
+                page=dialog_page,
+            )
+            print(f"[PRODUCTION_LINE] commission_date_field created: {commission_date_field}, type: {type(commission_date_field)}")
+        except Exception as e:
+            print(f"[PRODUCTION_LINE] ERROR creating commission_date_field: {e}")
+            import traceback
+            traceback.print_exc()
+            return
+        
+        try:
+            print("[PRODUCTION_LINE] Creating notes_field...")
+            notes_field = create_modern_text_field(
+                label=translator.get_text("production_line.notes") if translator.get_text("production_line.notes") != "production_line.notes" else "Jegyzetek",
+                multiline=True,
+                max_lines=4,
+            )
+            print(f"[PRODUCTION_LINE] notes_field created: {notes_field}, type: {type(notes_field)}")
+        except Exception as e:
+            print(f"[PRODUCTION_LINE] ERROR creating notes_field: {e}")
+            import traceback
+            traceback.print_exc()
+            return
+        
+        print("[PRODUCTION_LINE] All form fields created successfully")
+        
+        # Initialize autosave service
+        autosave_service = get_autosave_service()
+        user_id = get_current_user_id()
+        autosave_timer_ref = {"value": None}
+        autosave_enabled = True
+        
+        # Load draft if exists (for create, entity_id is None)
+        if user_id:
+            draft = autosave_service.load_draft("production_line", user_id, entity_id=None)
+            if draft and draft.get("form_data"):
+                form_data = draft.get("form_data", {})
+                if "name" in form_data and form_data["name"]:
+                    name_field.value = form_data["name"]
+                if "code" in form_data and form_data["code"]:
+                    code_field.value = form_data["code"]
+                if "description" in form_data and form_data["description"]:
+                    description_field.value = form_data["description"]
+                if "location" in form_data and form_data["location"]:
+                    location_field.value = form_data["location"]
+                if "status" in form_data and form_data["status"]:
+                    status_field.value = form_data["status"]
+                if "capacity" in form_data and form_data["capacity"]:
+                    capacity_field.value = form_data["capacity"]
+                if "responsible_person" in form_data and form_data["responsible_person"]:
+                    responsible_person_field.value = form_data["responsible_person"]
+                if "commission_date" in form_data and form_data["commission_date"]:
+                    commission_date_field.value = form_data["commission_date"]
+                if "notes" in form_data and form_data["notes"]:
+                    notes_field.value = form_data["notes"]
+        
+        # Auto-save function
+        def save_draft():
+            """Save current form state as draft"""
+            if not autosave_enabled or not user_id:
+                return
+            
+            try:
+                form_data = {
+                    "name": name_field.value or "",
+                    "code": code_field.value or "",
+                    "description": description_field.value or "",
+                    "location": location_field.value or "",
+                    "status": status_field.value or "Active",
+                    "capacity": capacity_field.value or "",
+                    "responsible_person": responsible_person_field.value or "",
+                    "commission_date": commission_date_field.value or "",
+                    "notes": notes_field.value or "",
+                }
+                
+                autosave_service.save_draft(
+                    entity_type="production_line",
+                    form_data=form_data,
+                    user_id=user_id,
+                    entity_id=None,  # None for create
+                )
+                logger.debug("Auto-saved draft for production line (create)")
+            except Exception as e:
+                logger.error(f"Error auto-saving draft: {e}")
+        
+        # Auto-save on field changes
+        def on_field_change(e):
+            """Handle field change and trigger auto-save"""
+            if autosave_timer_ref["value"]:
+                autosave_timer_ref["value"].cancel()
+            
+            # Schedule auto-save after 2 seconds of inactivity
+            def delayed_save():
+                save_draft()
+            
+            timer = threading.Timer(2.0, delayed_save)
+            timer.daemon = True
+            autosave_timer_ref["value"] = timer
+            timer.start()
+        
+        # Attach change handlers
+        name_field.on_change = on_field_change
+        code_field.on_change = on_field_change
+        description_field.on_change = on_field_change
+        location_field.on_change = on_field_change
+        status_field.on_change = on_field_change
+        capacity_field.on_change = on_field_change
+        responsible_person_field.on_change = on_field_change
+        commission_date_field.on_change = on_field_change
+        notes_field.on_change = on_field_change
+        
+        # Create dialog first (will be referenced in submit_create)
+        print("[PRODUCTION_LINE] Creating AlertDialog object (before submit_create)...")
+        dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Row([
+                ft.Icon(ft.Icons.ADD, color=DesignSystem.PRIMARY, size=24),
+                ft.Text(translator.get_text("production_line.create") if translator.get_text("production_line.create") != "production_line.create" else "Új termelési sor", size=20, weight=ft.FontWeight.BOLD)
+            ]),
+            content=ft.Container(
+                content=ft.Column([
+                    ft.Text(
+                        translator.get_text("production_line.basic_information") if translator.get_text("production_line.basic_information") != "production_line.basic_information" else "Alapinformációk",
+                        size=16,
+                        weight=ft.FontWeight.BOLD,
+                        color=DesignSystem.PRIMARY,
+                    ),
+                    name_field,
+                    ft.Row([
+                        code_field,
+                        status_field,
+                    ], spacing=DesignSystem.SPACING_2),
+                    location_field,
+                    ft.Divider(height=1, color=DesignSystem.BORDER_COLOR),
+                    ft.Text(
+                        translator.get_text("production_line.description_label") if translator.get_text("production_line.description_label") != "production_line.description_label" else "Leírás",
+                        size=16,
+                        weight=ft.FontWeight.BOLD,
+                        color=DesignSystem.PRIMARY,
+                    ),
+                    description_field,
+                    ft.Divider(height=1, color=DesignSystem.BORDER_COLOR),
+                    ft.Text(
+                        translator.get_text("production_line.details") if translator.get_text("production_line.details") != "production_line.details" else "Részletek",
+                        size=16,
+                        weight=ft.FontWeight.BOLD,
+                        color=DesignSystem.PRIMARY,
+                    ),
+                    ft.Row([
+                        capacity_field,
+                        responsible_person_field,
+                    ], spacing=DesignSystem.SPACING_2),
+                    commission_date_row,
+                    ft.Divider(height=1, color=DesignSystem.BORDER_COLOR),
+                    ft.Text(
+                        translator.get_text("production_line.notes_label") if translator.get_text("production_line.notes_label") != "production_line.notes_label" else "Jegyzetek",
+                        size=16,
+                        weight=ft.FontWeight.BOLD,
+                        color=DesignSystem.PRIMARY,
+                    ),
+                    notes_field,
+                ], spacing=DesignSystem.SPACING_3, tight=True, scroll=ft.ScrollMode.AUTO),
+                width=700,
+                height=700,
+            ),
+            actions=[],  # Will be set after submit_create is defined
+        )
+        print(f"[PRODUCTION_LINE] Dialog created: {dialog}, type: {type(dialog)}")
+        
+        # Flag to prevent double submission
+        _submitting = {"value": False}
+        
+        def submit_create(e):
+            # Prevent double submission
+            if _submitting["value"]:
+                print("[PRODUCTION_LINE] submit_create() already in progress, ignoring duplicate call")
+                return
+            
+            print("[PRODUCTION_LINE] submit_create() called")
+            print(f"[PRODUCTION_LINE] Event: {e}, type: {type(e)}")
+            _submitting["value"] = True
+            try:
+                print(f"[PRODUCTION_LINE] name_field.value: {name_field.value}")
+                if not name_field.value:
+                    error_msg = translator.get_text("common.messages.required_field") + ": " + translator.get_text("production_line.name")
+                    print(f"[PRODUCTION_LINE] Validation error: {error_msg}")
+                    raise ValueError(error_msg)
+                
+                print("[PRODUCTION_LINE] Calling asset_service.create_production_line()...")
+                # Parse commission_date if provided
+                commission_date = None
+                if commission_date_field.value:
+                    try:
+                        commission_date = datetime.strptime(commission_date_field.value, "%Y-%m-%d")
+                    except (ValueError, TypeError):
+                        print(f"[PRODUCTION_LINE] Warning: Invalid commission_date format: {commission_date_field.value}")
+                
+                asset_service.create_production_line(
+                    name=name_field.value,
+                    code=code_field.value if code_field.value else None,
+                    description=description_field.value if description_field.value else None,
+                    location=location_field.value if location_field.value else None,
+                    status=status_field.value if status_field.value else "Active",
+                    capacity=capacity_field.value if capacity_field.value else None,
+                    responsible_person=responsible_person_field.value if responsible_person_field.value else None,
+                    commission_date=commission_date,
+                    notes=notes_field.value if notes_field.value else None,
+                )
+                print("[PRODUCTION_LINE] Production line created successfully")
+                
+                # Clear draft after successful creation
+                if user_id:
+                    try:
+                        autosave_service.clear_draft("production_line", user_id, entity_id=None)
+                    except Exception as e:
+                        logger.error(f"Error clearing draft: {e}")
+                
+                # Close dialog with fallback
+                print("[PRODUCTION_LINE] Attempting to close dialog...")
+                try:
+                    dialog_page.close(dialog)
+                    print("[PRODUCTION_LINE] Dialog closed using dialog_page.close()")
+                except AttributeError as ae:
+                    print(f"[PRODUCTION_LINE] AttributeError closing dialog: {ae}")
+                    dialog.open = False
+                    dialog_page.update()
+                    print("[PRODUCTION_LINE] Dialog closed using dialog.open = False")
+                except Exception as close_exc:
+                    print(f"[PRODUCTION_LINE] Exception closing dialog: {close_exc}")
+                    import traceback
+                    traceback.print_exc()
+                    dialog.open = False
+                    dialog_page.update()
+                    print("[PRODUCTION_LINE] Dialog closed using dialog.open = False (fallback)")
+                
+                print("[PRODUCTION_LINE] Refreshing production lines list...")
+                if refresh_callback:
+                    refresh_callback()
+                
+                print("[PRODUCTION_LINE] Showing success message...")
+                dialog_page.snack_bar = ft.SnackBar(
+                    content=ft.Text(translator.get_text("production_line.created_success") if translator.get_text("production_line.created_success") != "production_line.created_success" else "Termelési sor létrehozva"),
+                    bgcolor=DesignSystem.SUCCESS,
+                )
+                dialog_page.snack_bar.open = True
+                dialog_page.update()
+                print("[PRODUCTION_LINE] Success message shown")
+            except Exception as exc:
+                print(f"[PRODUCTION_LINE] ERROR in submit_create: {exc}")
+                import traceback
+                traceback.print_exc()
+                dialog_page.snack_bar = ft.SnackBar(
+                    content=ft.Text(f"{translator.get_text('common.error')}: {exc}"),
+                    bgcolor=DesignSystem.ERROR,
+                )
+                dialog_page.snack_bar.open = True
+                dialog_page.update()
+                print("[PRODUCTION_LINE] Error message shown")
+            finally:
+                _submitting["value"] = False
+        
+        # Set dialog actions now that submit_create is defined
+        print("[PRODUCTION_LINE] Setting dialog actions...")
+        dialog.actions = [
+            ft.TextButton(
+                translator.get_text("common.buttons.cancel"),
+                on_click=lambda _: setattr(dialog, 'open', False) or dialog_page.update()
+            ),
+            ft.ElevatedButton(
+                translator.get_text("common.buttons.save"),
+                icon=ft.Icons.SAVE,
+                on_click=submit_create,
+                bgcolor=DesignSystem.PRIMARY,
+                color="#FFFFFF",
+            ),
+        ]
+        print(f"[PRODUCTION_LINE] Dialog actions set: {len(dialog.actions)} actions")
+        
+        print("[PRODUCTION_LINE] ====== Attempting to open dialog ======")
+        print(f"[PRODUCTION_LINE] dialog_page: {dialog_page}")
+        print(f"[PRODUCTION_LINE] dialog_page type: {type(dialog_page)}")
+        print(f"[PRODUCTION_LINE] dialog: {dialog}")
+        print(f"[PRODUCTION_LINE] dialog type: {type(dialog)}")
+        
+        # Use the same method as other screens (vacation_screen, etc.)
+        try:
+            dialog_page.dialog = dialog
+            dialog_page.dialog.open = True
+            dialog_page.update()
+            print(f"[PRODUCTION_LINE] Dialog opened successfully using page.dialog method")
+        except Exception as open_exc:
+            print(f"[PRODUCTION_LINE] ERROR opening dialog: {open_exc}")
+            import traceback
+            traceback.print_exc()
+            # Try alternative method
+            try:
+                if hasattr(dialog_page, 'open'):
+                    dialog_page.open(dialog)
+                    print(f"[PRODUCTION_LINE] Dialog opened using page.open() method")
+                else:
+                    raise Exception("No dialog opening method available")
+            except Exception as alt_exc:
+                print(f"[PRODUCTION_LINE] Alternative method also failed: {alt_exc}")
+                import traceback
+                traceback.print_exc()
+        print("[PRODUCTION_LINE] ====== Finished opening dialog ======")
+        logger.debug("Dialog opening process completed")
+        print("[PRODUCTION_LINE] ========================================")
+    
     def view(self, page: ft.Page):
         if not hasattr(self, 'page') or self.page is None:
             self.page = page
@@ -1652,35 +2084,6 @@ class ProductionLineScreen:
             if hasattr(page_ref, '_render_callback'):
                 page_ref._render_callback()
         
-        def open_create_dialog():
-            """Open dialog to create a new production line"""
-            print("[PRODUCTION_LINE] ========================================")
-            print("[PRODUCTION_LINE] open_create_dialog() called")
-            logger.debug("open_create_dialog() called")
-        
-        def handle_create_button_click(e):
-            """Wrapper function for create button click to avoid closure issues in PyInstaller"""
-            print(f"[PRODUCTION_LINE] handle_create_button_click called, event: {e}")
-            try:
-                open_create_dialog()
-            except Exception as ex:
-                print(f"[PRODUCTION_LINE] ERROR in handle_create_button_click: {ex}")
-                import traceback
-                traceback.print_exc()
-            try:
-                dialog_page = self.page if hasattr(self, 'page') and self.page else page
-                print(f"[PRODUCTION_LINE] dialog_page: {dialog_page}, type: {type(dialog_page)}")
-                print(f"[PRODUCTION_LINE] hasattr(self, 'page'): {hasattr(self, 'page')}")
-                if hasattr(self, 'page'):
-                    print(f"[PRODUCTION_LINE] self.page: {self.page}, type: {type(self.page)}")
-                print(f"[PRODUCTION_LINE] page parameter: {page}, type: {type(page)}")
-            except Exception as e:
-                print(f"[PRODUCTION_LINE] Error getting dialog_page: {e}")
-                import traceback
-                traceback.print_exc()
-                return
-            
-            print("[PRODUCTION_LINE] Creating form fields...")
             try:
                 print("[PRODUCTION_LINE] Creating name_field...")
                 name_label = translator.get_text("production_line.name") if translator.get_text("production_line.name") != "production_line.name" else "Név"
@@ -2094,10 +2497,6 @@ class ProductionLineScreen:
                     print(f"[PRODUCTION_LINE] Alternative method also failed: {alt_exc}")
                     import traceback
                     traceback.print_exc()
-            print("[PRODUCTION_LINE] ====== Finished opening dialog ======")
-            logger.debug("Dialog opening process completed")
-            print("[PRODUCTION_LINE] ========================================")
-        
         def open_edit_dialog(production_line_id: int):
             """Open dialog to edit a production line"""
             dialog_page = self.page if hasattr(self, 'page') and self.page else page
@@ -2640,7 +3039,7 @@ class ProductionLineScreen:
                         create_modern_button(
                             text=translator.get_text("production_line.create") if translator.get_text("production_line.create") != "production_line.create" else "Új termelési sor",
                             icon=ft.Icons.ADD,
-                            on_click=handle_create_button_click,
+                            on_click=self._open_create_dialog,
                             variant="blue",
                         ),
                     ], spacing=DesignSystem.SPACING_3, alignment=ft.MainAxisAlignment.SPACE_BETWEEN),

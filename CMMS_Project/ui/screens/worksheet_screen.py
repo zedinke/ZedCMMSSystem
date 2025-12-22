@@ -10,14 +10,19 @@ if not hasattr(ft, 'Icons'):
     ft.Icons = Icons
 from datetime import datetime
 from collections import defaultdict
+from pathlib import Path
 from services import worksheet_service, asset_service, inventory_service, pdf_service
 from services.context_service import get_app_context, get_current_user_id
 from services.settings_service import get_worksheet_name_format
 from services.user_service import get_user
+from services.autosave_service import get_autosave_service
 import logging
+import threading
 
 logger = logging.getLogger(__name__)
 from localization.translator import translator
+from ui.components.pagination import PaginationController, create_pagination_controls, create_items_per_page_selector
+from ui.components.batch_actions_bar import create_batch_actions_bar
 from ui.components.modern_components import (
     create_modern_button,
     create_modern_card,
@@ -325,11 +330,29 @@ class WorksheetScreen:
                 ft.Container(height=16) if ws.notes else ft.Container(height=0),
                 create_modern_divider(),
                 ft.Container(height=16),
+                # Create wrapper functions to avoid lambda closure issues in PyInstaller
+                def create_worksheet_handlers(worksheet, work_req_path, scrapping_docs):
+                    def handle_edit(e):
+                        self._on_worksheet_edit(worksheet, page)
+                    
+                    def handle_pdf_download(e):
+                        self._on_pdf_download(worksheet, page)
+                    
+                    def handle_work_request_download(e):
+                        self._on_work_request_download(worksheet, page, work_req_path)
+                    
+                    def handle_scrapping_download(e):
+                        self._on_scrapping_download(worksheet, page, scrapping_docs)
+                    
+                    return handle_edit, handle_pdf_download, handle_work_request_download, handle_scrapping_download
+                
+                handle_edit, handle_pdf_download, handle_work_request_download, handle_scrapping_download = create_worksheet_handlers(ws, work_request_path, worksheet_scrapping_docs)
+                
                 ft.Row([
                     ft.ElevatedButton(
                         translator.get_text("common.buttons.edit"),
                         icon=ft.Icons.EDIT if hasattr(ft.Icons, 'EDIT') else ft.Icons.EDIT_OUTLINED,
-                        on_click=lambda e, w=ws: self._on_worksheet_edit(w, page),
+                        on_click=handle_edit,
                         bgcolor="#6366F1",
                         color="#FFFFFF",
                         height=40,
@@ -337,7 +360,7 @@ class WorksheetScreen:
                     ft.ElevatedButton(
                         "DOCX",
                         icon=ft.Icons.DOWNLOAD if hasattr(ft.Icons, 'DOWNLOAD') else ft.Icons.FILE_DOWNLOAD,
-                        on_click=lambda e, w=ws: self._on_pdf_download(w, page),
+                        on_click=handle_pdf_download,
                         bgcolor=DesignSystem.SUCCESS,
                         color="#FFFFFF",
                         height=40,
@@ -346,7 +369,7 @@ class WorksheetScreen:
                     ft.ElevatedButton(
                         translator.get_text("preventive_maintenance.work_request"),
                         icon=ft.Icons.DESCRIPTION if hasattr(ft.Icons, 'DESCRIPTION') else ft.Icons.ASSIGNMENT,
-                        on_click=lambda e, w=ws, path=work_request_path: self._on_work_request_download(w, page, path),
+                        on_click=handle_work_request_download,
                         bgcolor="#F59E0B",
                         color="#FFFFFF",
                         height=40,
@@ -355,7 +378,7 @@ class WorksheetScreen:
                     ft.ElevatedButton(
                         translator.get_text("scrapping.download"),
                         icon=ft.Icons.DESCRIPTION if hasattr(ft.Icons, 'DESCRIPTION') else ft.Icons.ASSIGNMENT,
-                        on_click=lambda e, w=ws, docs=worksheet_scrapping_docs: self._on_scrapping_download(w, page, docs),
+                        on_click=handle_scrapping_download,
                         bgcolor="#EF4444",
                         color="#FFFFFF",
                         height=40,
@@ -738,7 +761,7 @@ class WorksheetScreen:
             page.snack_bar.open = True
             page.update()
 
-    def _build_worksheet_card(self, ws, on_worksheet_selected, page):
+    def _build_worksheet_card(self, ws, on_worksheet_selected, page, selected_worksheet_ids=None, on_selection_change=None):
         """Build modern worksheet card with expandable preview"""
         status_color = self._get_status_color(ws.status)
         status_bg_color = self._get_status_bg_color(ws.status)
@@ -758,6 +781,15 @@ class WorksheetScreen:
         
         # Check if this worksheet is expanded
         is_expanded = self.expanded_worksheets.get(ws.id, False)
+        
+        # Create checkbox for multi-select (if selection is enabled)
+        worksheet_checkbox = None
+        if selected_worksheet_ids is not None and on_selection_change is not None:
+            worksheet_checkbox = ft.Checkbox(
+                value=ws.id in selected_worksheet_ids,
+                on_change=lambda e, ws_id=ws.id: on_selection_change(ws_id, e),
+                tooltip=translator.get_text("common.select") if hasattr(translator, 'get_text') else "Select",
+            )
         
         # Preview panel
         preview_panel = self._build_preview_panel(ws, page)
@@ -805,6 +837,8 @@ class WorksheetScreen:
         card_content = ft.Container(
             content=ft.Column([
                 ft.Row([
+                    worksheet_checkbox if worksheet_checkbox else ft.Container(width=0),
+                    ft.Container(width=8) if worksheet_checkbox else ft.Container(width=0),  # Spacing
                 ft.Container(
                     content=ft.Icon(status_icon, size=24, color=status_color),
                     padding=8,
@@ -889,7 +923,7 @@ class WorksheetScreen:
             ),
         )
 
-    def _build_grouped_worksheet_list(self, worksheets, on_worksheet_selected, page):
+    def _build_grouped_worksheet_list(self, worksheets, on_worksheet_selected, page, selected_worksheet_ids=None, on_selection_change=None):
         """Build a modern grouped list of worksheets"""
         list_items = []
         
@@ -930,7 +964,7 @@ class WorksheetScreen:
                 for day in sorted(grouped[year][month].keys(), reverse=True):
                     day_worksheets = grouped[year][month][day]
                     worksheet_cards = [
-                        self._build_worksheet_card(ws, on_worksheet_selected, page)
+                        self._build_worksheet_card(ws, on_worksheet_selected, page, selected_worksheet_ids, on_selection_change)
                         for ws in day_worksheets
                     ]
                     
@@ -998,7 +1032,27 @@ class WorksheetScreen:
             """Helper function to get worksheets based on current filter"""
             return worksheet_service.list_all_worksheets() if self.show_closed else worksheet_service.list_active_worksheets()
         
-        worksheets = get_worksheets()
+        # Pagination settings
+        ITEMS_PER_PAGE = 25
+        
+        # Get all worksheets
+        all_worksheets = get_worksheets()
+        total_worksheets_count = len(all_worksheets)
+        
+        # Initialize PaginationController
+        pagination_controller = PaginationController(
+            total_items=total_worksheets_count,
+            items_per_page=ITEMS_PER_PAGE,
+            on_page_change=None,  # Will be set after refresh function is defined
+        )
+        
+        # Selected items for batch operations
+        selected_worksheet_ids = set()
+        
+        # Get paginated worksheets
+        offset = pagination_controller.start_index
+        limit = pagination_controller.items_per_page
+        worksheets = all_worksheets[offset:offset + limit]
 
         def on_worksheet_selected(ws):
             try:
@@ -1026,9 +1080,212 @@ class WorksheetScreen:
                 page.snack_bar = ft.SnackBar(ft.Text(f"{translator.get_text('common.messages.error_occurred')}: {str(ex)}"))
                 page.snack_bar.open = True
                 page.update()
+        
+        # Selection change handler
+        batch_actions_bar_ref = {"value": None}  # Reference to batch actions bar
+        
+        def _on_worksheet_selection_change(worksheet_id, e):
+            """Handle worksheet selection checkbox change"""
+            if e.control.value:
+                selected_worksheet_ids.add(worksheet_id)
+            else:
+                selected_worksheet_ids.discard(worksheet_id)
+            
+            # Update batch actions bar visibility
+            _update_batch_actions_bar()
+            page.update()
+        
+        def _clear_selection():
+            """Clear all selections"""
+            selected_worksheet_ids.clear()
+            # Rebuild list
+            ws_list_items = self._build_grouped_worksheet_list(worksheets, on_worksheet_selected, page, selected_worksheet_ids, _on_worksheet_selection_change)
+            ws_list.controls.clear()
+            ws_list.controls.extend(ws_list_items)
+            _update_batch_actions_bar()
+            page.update()
+        
+        def _select_all():
+            """Select all worksheets on current page"""
+            for ws in worksheets:
+                selected_worksheet_ids.add(ws.id)
+            # Rebuild list
+            ws_list_items = self._build_grouped_worksheet_list(worksheets, on_worksheet_selected, page, selected_worksheet_ids, _on_worksheet_selection_change)
+            ws_list.controls.clear()
+            ws_list.controls.extend(ws_list_items)
+            _update_batch_actions_bar()
+            page.update()
+        
+        def _update_batch_actions_bar():
+            """Update batch actions bar visibility and content"""
+            selected_count = len(selected_worksheet_ids)
+            
+            if batch_actions_bar_ref["value"]:
+                batch_actions_bar_ref["value"].visible = selected_count > 0
+                if selected_count > 0:
+                    # Update the bar content
+                    batch_actions_bar_ref["value"].content = _create_batch_actions_bar_content()
+                page.update()
+        
+        def _create_batch_actions_bar_content():
+            """Create batch actions bar content"""
+            selected_count = len(selected_worksheet_ids)
+            
+            def on_batch_delete():
+                """Delete selected worksheets"""
+                if not selected_worksheet_ids:
+                    return
+                
+                from ui.components.confirmation_dialogs import create_delete_confirmation_dialog
+                
+                def confirm_delete():
+                    try:
+                        deleted_count = 0
+                        for worksheet_id in list(selected_worksheet_ids):
+                            try:
+                                worksheet_service.delete_worksheet(worksheet_id)
+                                deleted_count += 1
+                            except Exception as e:
+                                print(f"Error deleting worksheet {worksheet_id}: {e}")
+                        
+                        selected_worksheet_ids.clear()
+                        # Reload worksheets
+                        all_worksheets = get_worksheets()
+                        pagination_controller.update_total_items(len(all_worksheets))
+                        offset = pagination_controller.start_index
+                        limit = pagination_controller.items_per_page
+                        worksheets = all_worksheets[offset:offset + limit]
+                        ws_list_items = self._build_grouped_worksheet_list(worksheets, on_worksheet_selected, page, selected_worksheet_ids, _on_worksheet_selection_change)
+                        ws_list.controls.clear()
+                        ws_list.controls.extend(ws_list_items)
+                        _update_batch_actions_bar()
+                        header_text.value = f"{len(worksheets)} munkalap"
+                        page.snack_bar = ft.SnackBar(
+                            content=ft.Text(f"{deleted_count} {translator.get_text('worksheets.worksheet')} törölve"),
+                            bgcolor=DesignSystem.SUCCESS,
+                        )
+                        page.snack_bar.open = True
+                        page.update()
+                    except Exception as e:
+                        page.snack_bar = ft.SnackBar(
+                            content=ft.Text(f"Hiba: {e}"),
+                            bgcolor=DesignSystem.ERROR,
+                        )
+                        page.snack_bar.open = True
+                        page.update()
+                
+                dialog = create_delete_confirmation_dialog(
+                    page=page,
+                    entity_name=f"{selected_count} {translator.get_text('worksheets.worksheet')}",
+                    on_confirm=confirm_delete,
+                )
+                page.dialog = dialog
+                dialog.open = True
+                page.update()
+            
+            def on_batch_export():
+                """Export selected worksheets"""
+                if not selected_worksheet_ids:
+                    return
+                
+                try:
+                    from services.export_service import ExportService
+                    worksheets_list = [worksheet_service.get_worksheet(ws_id) for ws_id in selected_worksheet_ids]
+                    
+                    # Convert worksheets to dict format
+                    worksheets_data = []
+                    for ws in worksheets_list:
+                        if ws:
+                            worksheets_data.append({
+                                "ID": ws.id,
+                                "Cím": ws.title or "",
+                                "Gép": ws.machine.name if ws.machine else "",
+                                "Státusz": ws.status or "",
+                                "Hibabejelentés ideje": ws.breakdown_time.strftime("%Y-%m-%d %H:%M") if ws.breakdown_time else "",
+                                "Létrehozva": ws.created_at.strftime("%Y-%m-%d") if ws.created_at else "",
+                            })
+                    
+                    # Export to CSV
+                    csv_data = ExportService.export_to_csv(
+                        data=worksheets_data,
+                        headers=["ID", "Cím", "Gép", "Státusz", "Hibabejelentés ideje", "Létrehozva"],
+                    )
+                    
+                    # Save file
+                    filename = f"worksheets_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+                    file_path = Path.home() / "Downloads" / filename
+                    file_path.parent.mkdir(parents=True, exist_ok=True)
+                    file_path.write_bytes(csv_data)
+                    
+                    page.snack_bar = ft.SnackBar(
+                        content=ft.Text(f"{len(worksheets_list)} {translator.get_text('worksheets.worksheet')} exportálva: {file_path}"),
+                        bgcolor=DesignSystem.SUCCESS,
+                    )
+                    page.snack_bar.open = True
+                    page.update()
+                except Exception as e:
+                    page.snack_bar = ft.SnackBar(
+                        content=ft.Text(f"Export hiba: {e}"),
+                        bgcolor=DesignSystem.ERROR,
+                    )
+                    page.snack_bar.open = True
+                    page.update()
+            
+            # Create wrapper functions to avoid lambda closure issues in PyInstaller
+            def handle_batch_delete(e):
+                on_batch_delete()
+            
+            def handle_batch_export(e):
+                on_batch_export()
+            
+            actions = [
+                {
+                    "label": translator.get_text("common.buttons.delete"),
+                    "icon": ft.Icons.DELETE,
+                    "on_click": handle_batch_delete,
+                    "color": DesignSystem.ERROR,
+                },
+                {
+                    "label": translator.get_text("common.buttons.export"),
+                    "icon": ft.Icons.DOWNLOAD,
+                    "on_click": handle_batch_export,
+                    "color": DesignSystem.BLUE_500,
+                },
+            ]
+            
+            return create_batch_actions_bar(
+                selected_count=selected_count,
+                actions=actions,
+                on_clear_selection=_clear_selection,
+                page=page,
+            )
+        
+        # Create batch actions bar container
+        batch_actions_bar_container = ft.Container(
+            content=_create_batch_actions_bar_content(),
+            visible=False,
+        )
+        batch_actions_bar_ref["value"] = batch_actions_bar_container
+        
+        # Set up pagination controller callback
+        def on_page_change(page_num):
+            # page_num is 1-based from PaginationController
+            # Convert to 0-based
+            offset = (page_num - 1) * pagination_controller.items_per_page
+            limit = pagination_controller.items_per_page
+            worksheets = all_worksheets[offset:offset + limit]
+            
+            # Rebuild list
+            ws_list_items = self._build_grouped_worksheet_list(worksheets, on_worksheet_selected, page, selected_worksheet_ids, _on_worksheet_selection_change)
+            ws_list.controls.clear()
+            ws_list.controls.extend(ws_list_items)
+            header_text.value = f"{len(worksheets)} munkalap"
+            page.update()
+        
+        pagination_controller.on_page_change = on_page_change
 
         # Build grouped list
-        ws_list_items = self._build_grouped_worksheet_list(worksheets, on_worksheet_selected, page)
+        ws_list_items = self._build_grouped_worksheet_list(worksheets, on_worksheet_selected, page, selected_worksheet_ids, _on_worksheet_selection_change)
         ws_list = ft.ListView(ws_list_items, expand=True, spacing=12)
         
         # Header text (must be defined before callback)
@@ -1043,10 +1300,14 @@ class WorksheetScreen:
                 self.show_closed = e.control.value
                 print(f"[UI] Toggle closed: {self.show_closed}")
                 # Reload worksheets based on filter
-                worksheets = get_worksheets()
+                all_worksheets = get_worksheets()
+                pagination_controller.update_total_items(len(all_worksheets))
+                offset = pagination_controller.start_index
+                limit = pagination_controller.items_per_page
+                worksheets = all_worksheets[offset:offset + limit]
                 print(f"[UI] Loaded {len(worksheets)} worksheets (show_closed={self.show_closed})")
                 # Rebuild list items
-                new_list_items = self._build_grouped_worksheet_list(worksheets, on_worksheet_selected, page)
+                new_list_items = self._build_grouped_worksheet_list(worksheets, on_worksheet_selected, page, selected_worksheet_ids, _on_worksheet_selection_change)
                 # Update ListView controls
                 ws_list.controls.clear()
                 ws_list.controls.extend(new_list_items)
@@ -1062,9 +1323,38 @@ class WorksheetScreen:
                 page.snack_bar.open = True
                 page.update()
         
+        # Create pagination controls
+        pagination_controls = create_pagination_controls(
+            controller=pagination_controller,
+            show_page_numbers=True,
+            max_page_buttons=7,
+        )
+        
+        # Create items per page selector
+        items_per_page_selector = create_items_per_page_selector(
+            controller=pagination_controller,
+            options=[10, 25, 50, 100],
+        )
+        
+        # Wrap pagination controls in a container
+        pagination_row = ft.Row([
+            pagination_controls,
+            ft.Container(width=DesignSystem.SPACING_4),
+            items_per_page_selector,
+        ], alignment=ft.MainAxisAlignment.CENTER, spacing=DesignSystem.SPACING_2) if pagination_controller.total_pages > 1 else ft.Container()
+        
+        # Select all checkbox
+        select_all_checkbox = ft.Checkbox(
+            value=False,
+            on_change=lambda e: (_select_all() if e.control.value else _clear_selection()),
+            tooltip=translator.get_text("common.select_all") if hasattr(translator, 'get_text') else "Select All",
+        )
+        
         # Modern header
         header = ft.Container(
             content=ft.Row([
+                select_all_checkbox,
+                ft.Container(width=8),
                 ft.Container(
                     content=ft.Icon(
                         ft.Icons.ASSIGNMENT if hasattr(ft.Icons, 'ASSIGNMENT') else ft.Icons.DESCRIPTION,
@@ -1094,12 +1384,12 @@ class WorksheetScreen:
                 ft.ElevatedButton(
                     translator.get_text("worksheets.create_new"),
                     icon=ft.Icons.ADD,
-                    on_click=lambda e: create_new_worksheet(),
+                    on_click=lambda e: create_new_worksheet(),  # This is fine, no closure issue
                     bgcolor="#6366F1",
                     color="#FFFFFF",
                     height=44,
                 ),
-            ], alignment=ft.MainAxisAlignment.START),
+            ], alignment=ft.MainAxisAlignment.START, vertical_alignment=ft.CrossAxisAlignment.CENTER),
             padding=20,
             bgcolor="#FFFFFF",
             border_radius=12,
@@ -1107,8 +1397,11 @@ class WorksheetScreen:
 
         return ft.Column([
             header,
+            batch_actions_bar_container,
             ft.Container(height=16),
+            pagination_row,
             ws_list,
+            pagination_row,
         ], spacing=0, expand=True, scroll=ft.ScrollMode.AUTO)
 
     def _worksheet_detail_view(self, page: ft.Page):
@@ -1122,6 +1415,12 @@ class WorksheetScreen:
                 self.current_worksheet = ws
             except Exception as ex:
                 logger.warning(f"Error reloading worksheet with parts: {ex}")
+        
+        # Initialize autosave service
+        autosave_service = get_autosave_service()
+        user_id = get_current_user_id()
+        autosave_timer_ref = {"value": None}
+        autosave_enabled = True
         
         save_picker_result = {"path": None}
         pending_save_callback = {"fn": None}
@@ -1723,6 +2022,97 @@ class WorksheetScreen:
                 ], spacing=16),
             ),
         )
+        
+        # Load draft if exists
+        if ws and user_id:
+            draft = autosave_service.load_draft("worksheet", user_id, entity_id=ws.id)
+            if draft and draft.get("form_data"):
+                form_data = draft.get("form_data", {})
+                if "status" in form_data and form_data["status"]:
+                    status_field.value = form_data["status"]
+                if "fault_cause" in form_data and form_data["fault_cause"]:
+                    fault_cause_field.value = form_data["fault_cause"]
+                if "notes" in form_data and form_data["notes"]:
+                    notes_field.value = form_data["notes"]
+                if "repair_finished" in form_data and form_data["repair_finished"]:
+                    repair_finished_field.value = form_data["repair_finished"]
+        
+        # Auto-save function
+        def save_draft():
+            """Save current form state as draft"""
+            if not autosave_enabled or not ws or not user_id:
+                return
+            
+            try:
+                form_data = {
+                    "status": status_field.value or "",
+                    "fault_cause": fault_cause_field.value or "",
+                    "notes": notes_field.value or "",
+                    "repair_finished": repair_finished_field.value or "",
+                }
+                
+                autosave_service.save_draft(
+                    entity_type="worksheet",
+                    form_data=form_data,
+                    user_id=user_id,
+                    entity_id=ws.id,
+                )
+                logger.debug(f"Auto-saved draft for worksheet {ws.id}")
+            except Exception as e:
+                logger.error(f"Error auto-saving draft: {e}")
+        
+        # Auto-save on field changes
+        def on_field_change(e):
+            """Handle field change and trigger auto-save"""
+            if autosave_timer_ref["value"]:
+                autosave_timer_ref["value"].cancel()
+            
+            # Schedule auto-save after 2 seconds of inactivity
+            def delayed_save():
+                save_draft()
+            
+            timer = threading.Timer(2.0, delayed_save)
+            timer.daemon = True
+            autosave_timer_ref["value"] = timer
+            timer.start()
+        
+        # Attach change handlers
+        status_field.on_change = lambda e: (on_status_change(e), on_field_change(e))
+        fault_cause_field.on_change = on_field_change
+        notes_field.on_change = on_field_change
+        repair_finished_field.on_change = on_field_change
+        
+        # Periodic auto-save (every 30 seconds)
+        def periodic_autosave():
+            """Periodic auto-save timer"""
+            if autosave_enabled and ws and user_id:
+                save_draft()
+                # Schedule next save
+                timer = threading.Timer(30.0, periodic_autosave)
+                timer.daemon = True
+                timer.start()
+        
+        # Start periodic auto-save
+        if ws and user_id:
+            timer = threading.Timer(30.0, periodic_autosave)
+            timer.daemon = True
+            timer.start()
+        
+        # Clean up draft on successful save
+        original_close_worksheet = close_worksheet
+        def close_worksheet_with_cleanup():
+            """Close worksheet and clean up draft"""
+            try:
+                original_close_worksheet()
+                # Delete draft after successful save
+                if ws and user_id:
+                    autosave_service.delete_draft("worksheet", user_id, entity_id=ws.id)
+            except Exception as e:
+                logger.error(f"Error in close_worksheet_with_cleanup: {e}")
+                original_close_worksheet()
+        
+        # Replace close_worksheet function
+        close_worksheet = close_worksheet_with_cleanup
 
         # Parts section
         parts_section = ft.Card(
@@ -1745,7 +2135,7 @@ class WorksheetScreen:
                         create_modern_button(
                             text="+ " + (translator.get_text("worksheets.add_part") or "Alkatrész hozzáadása"),
                             icon=ft.Icons.ADD,
-                            on_click=lambda e: open_add_part_dialog(),
+                            on_click=lambda e: open_add_part_dialog(),  # This is fine, no closure issue
                             bgcolor=DesignSystem.EMERALD_500,
                             color=DesignSystem.WHITE,
                             height=36,
@@ -1764,11 +2154,15 @@ class WorksheetScreen:
             ft.Container(height=16),
             parts_section,
             ft.Container(height=16),
+            # Create wrapper function to avoid lambda closure issues in PyInstaller
+            def handle_close_worksheet(e):
+                close_worksheet()
+            
             ft.Row([
                 ft.ElevatedButton(
                     translator.get_text("worksheets.close_worksheet"),
                     icon=ft.Icons.CHECK_CIRCLE if hasattr(ft.Icons, 'CHECK_CIRCLE') else ft.Icons.CHECK,
-                    on_click=lambda e: close_worksheet(),
+                    on_click=handle_close_worksheet,
                     bgcolor=DesignSystem.SUCCESS,
                     color="#FFFFFF",
                     height=44,

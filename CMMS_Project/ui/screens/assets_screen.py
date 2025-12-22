@@ -9,6 +9,9 @@ from services.context_service import get_app_context
 from localization.translator import translator
 from utils.currency import format_price
 from datetime import datetime, timedelta
+from pathlib import Path
+from ui.components.pagination import PaginationController, create_pagination_controls, create_items_per_page_selector
+from ui.components.batch_actions_bar import create_batch_actions_bar
 from utils.debug_helper import (
     debug_entry, debug_exit, debug_step, debug_variable, debug_call, 
     debug_return, debug_error, debug_exception, debug_ui, debug_service,
@@ -37,6 +40,23 @@ class AssetsScreen:
         # Use stored page reference for dialogs
         if not hasattr(self, 'page') or self.page is None:
             self.page = page
+        
+        # Pagination settings
+        ITEMS_PER_PAGE = 25
+        
+        # Get total count for pagination
+        machines = asset_service.list_machines()
+        total_machines_count = len(machines)
+        
+        # Initialize PaginationController
+        pagination_controller = PaginationController(
+            total_items=total_machines_count,
+            items_per_page=ITEMS_PER_PAGE,
+            on_page_change=None,  # Will be set after refresh function is defined
+        )
+        
+        # Selected items for batch operations
+        selected_machine_ids = set()
         
         machines_list = ft.Column([], spacing=8, scroll=ft.ScrollMode.AUTO, expand=True)
 
@@ -525,7 +545,12 @@ class AssetsScreen:
                 debug_exit(module_name, function_name, {"success": False, "error": str(e)})
                 raise
 
-        def refresh_list(update_page=True):
+        def refresh_list(update_page=True, page_num=None):
+            # Update pagination controller if page_num is provided
+            if page_num is not None:
+                # Convert 0-based to 1-based for PaginationController
+                pagination_controller.go_to_page(page_num + 1)
+            
             # Don't update if dialog is open
             page_ref = self.page if hasattr(self, 'page') and self.page else page
             if hasattr(page_ref, 'dialog') and page_ref.dialog is not None:
@@ -554,7 +579,18 @@ class AssetsScreen:
                 except Exception as e:
                     print(f"[ASSETS] Error loading machine for search: {e}")
             
-            machines = asset_service.list_machines()
+            # Get all machines
+            all_machines = asset_service.list_machines()
+            
+            # Update total count
+            total_machines_count = len(all_machines)
+            pagination_controller.update_total_items(total_machines_count)
+            
+            # Get paginated machines
+            offset = pagination_controller.start_index
+            limit = pagination_controller.items_per_page
+            machines = all_machines[offset:offset + limit]
+            
             machines_list.controls.clear()
             
             # Load machines with history for version display
@@ -573,6 +609,31 @@ class AssetsScreen:
                 )
             else:
                 for machine in machines_with_history:
+                    # Create wrapper functions to avoid lambda closure issues in PyInstaller
+                    def create_machine_handlers(m):
+                        def handle_add_service(e):
+                            open_add_service_dialog(m)
+                        
+                        def handle_edit(e):
+                            open_edit_machine_dialog(m)
+                        
+                        def handle_correct_hours(e):
+                            open_correct_operating_hours_dialog(m)
+                        
+                        def handle_delete(e):
+                            open_delete_machine_dialog(m)
+                        
+                        return handle_add_service, handle_edit, handle_correct_hours, handle_delete
+                    
+                    handle_add_service, handle_edit, handle_correct_hours, handle_delete = create_machine_handlers(machine)
+                    
+                    # Create checkbox for multi-select
+                    machine_checkbox = ft.Checkbox(
+                        value=machine.id in selected_machine_ids,
+                        on_change=lambda e, m_id=machine.id: _on_machine_selection_change(m_id, e),
+                        tooltip=translator.get_text("common.select") if hasattr(translator, 'get_text') else "Select",
+                    )
+                    
                     # Get compatible parts
                     compatible_parts = machine.id_compatible_parts if hasattr(machine, 'id_compatible_parts') else []
                     parts_text = ", ".join([p.name for p in compatible_parts[:3]])
@@ -592,6 +653,8 @@ class AssetsScreen:
                     
                     card_content_items = [
                                 ft.Row([
+                                    machine_checkbox,
+                                    ft.Container(width=8),  # Spacing between checkbox and content
                             ft.Container(
                                 content=ft.Icon(ft.Icons.PRECISION_MANUFACTURING, color=DesignSystem.PURPLE_500, size=24),
                                 padding=ft.padding.all(DesignSystem.SPACING_2),
@@ -692,7 +755,7 @@ class AssetsScreen:
                             create_modern_icon_button(
                                             icon=ft.Icons.BUILD_CIRCLE,
                                             tooltip="Szervizelés hozzáadása",
-                                            on_click=lambda e, m=machine: open_add_service_dialog(m),
+                                            on_click=handle_add_service,
                                 color=DesignSystem.EMERALD_500,
                                 vibrant=True,
                                 variant="emerald",
@@ -700,7 +763,7 @@ class AssetsScreen:
                             create_modern_icon_button(
                                             icon=ft.Icons.EDIT,
                                             tooltip=translator.get_text("common.buttons.edit"),
-                                            on_click=lambda e, m=machine: open_edit_machine_dialog(m),
+                                            on_click=handle_edit,
                                 color=DesignSystem.BLUE_500,
                                 vibrant=True,
                                 variant="blue",
@@ -708,7 +771,7 @@ class AssetsScreen:
                             create_modern_icon_button(
                                             icon=ft.Icons.ACCESS_TIME,
                                             tooltip=translator.get_text("assets.correct_operating_hours"),
-                                            on_click=lambda e, m=machine: open_correct_operating_hours_dialog(m),
+                                            on_click=handle_correct_hours,
                                 color=DesignSystem.ORANGE_500,
                                 vibrant=True,
                                 variant="orange",
@@ -716,7 +779,7 @@ class AssetsScreen:
                             create_modern_icon_button(
                                             icon=ft.Icons.DELETE,
                                             tooltip=translator.get_text("common.buttons.delete"),
-                                            on_click=lambda e, m=machine: open_delete_machine_dialog(m),
+                                            on_click=handle_delete,
                                 color=DesignSystem.RED_500,
                                 vibrant=True,
                                 variant="red",
@@ -1796,6 +1859,191 @@ class AssetsScreen:
                 dialog.open = True
                 dialog_page.update()
 
+        # Selection change handler
+        batch_actions_bar_ref = {"value": None}  # Reference to batch actions bar
+        
+        def _on_machine_selection_change(machine_id, e):
+            """Handle machine selection checkbox change"""
+            if e.control.value:
+                selected_machine_ids.add(machine_id)
+            else:
+                selected_machine_ids.discard(machine_id)
+            
+            # Update batch actions bar visibility
+            _update_batch_actions_bar()
+            page.update()
+        
+        def _clear_selection():
+            """Clear all selections"""
+            selected_machine_ids.clear()
+            refresh_list(update_page=True)
+            _update_batch_actions_bar()
+            page.update()
+        
+        def _select_all():
+            """Select all machines on current page"""
+            # Get current page machines
+            all_machines = asset_service.list_machines()
+            offset = pagination_controller.start_index
+            limit = pagination_controller.items_per_page
+            current_machines = all_machines[offset:offset + limit]
+            for machine in current_machines:
+                selected_machine_ids.add(machine.id)
+            refresh_list(update_page=True)
+            _update_batch_actions_bar()
+            page.update()
+        
+        def _update_batch_actions_bar():
+            """Update batch actions bar visibility and content"""
+            selected_count = len(selected_machine_ids)
+            
+            if batch_actions_bar_ref["value"]:
+                batch_actions_bar_ref["value"].visible = selected_count > 0
+                if selected_count > 0:
+                    # Update the bar content
+                    batch_actions_bar_ref["value"].content = _create_batch_actions_bar_content()
+                page.update()
+        
+        def _create_batch_actions_bar_content():
+            """Create batch actions bar content"""
+            selected_count = len(selected_machine_ids)
+            
+            def on_batch_delete():
+                """Delete selected machines"""
+                if not selected_machine_ids:
+                    return
+                
+                from ui.components.confirmation_dialogs import create_delete_confirmation_dialog
+                
+                def confirm_delete():
+                    try:
+                        deleted_count = 0
+                        for machine_id in list(selected_machine_ids):
+                            try:
+                                asset_service.delete_machine(machine_id)
+                                deleted_count += 1
+                            except Exception as e:
+                                print(f"Error deleting machine {machine_id}: {e}")
+                        
+                        selected_machine_ids.clear()
+                        refresh_list(update_page=True)
+                        _update_batch_actions_bar()
+                        page.snack_bar = ft.SnackBar(
+                            content=ft.Text(f"{deleted_count} {translator.get_text('assets.machine')} törölve"),
+                            bgcolor=DesignSystem.SUCCESS,
+                        )
+                        page.snack_bar.open = True
+                        page.update()
+                    except Exception as e:
+                        page.snack_bar = ft.SnackBar(
+                            content=ft.Text(f"Hiba: {e}"),
+                            bgcolor=DesignSystem.ERROR,
+                        )
+                        page.snack_bar.open = True
+                        page.update()
+                
+                dialog = create_delete_confirmation_dialog(
+                    page=page,
+                    entity_name=f"{selected_count} {translator.get_text('assets.machine')}",
+                    on_confirm=confirm_delete,
+                )
+                page.dialog = dialog
+                dialog.open = True
+                page.update()
+            
+            def on_batch_export():
+                """Export selected machines"""
+                if not selected_machine_ids:
+                    return
+                
+                try:
+                    from services.export_service import ExportService
+                    machines = [asset_service.get_machine(machine_id) for machine_id in selected_machine_ids]
+                    
+                    # Convert machines to dict format
+                    machines_data = []
+                    for machine in machines:
+                        if machine:
+                            machines_data.append({
+                                "ID": machine.id,
+                                "Név": machine.name,
+                                "Sorozatszám": machine.serial_number or "",
+                                "Modell": machine.model or "",
+                                "Státusz": machine.status or "",
+                                "Termelési sor": machine.production_line.name if hasattr(machine, 'production_line') and machine.production_line else "",
+                            })
+                    
+                    # Export to CSV
+                    csv_data = ExportService.export_to_csv(
+                        data=machines_data,
+                        headers=["ID", "Név", "Sorozatszám", "Modell", "Státusz", "Termelési sor"],
+                    )
+                    
+                    # Save file
+                    filename = f"machines_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+                    file_path = Path.home() / "Downloads" / filename
+                    file_path.parent.mkdir(parents=True, exist_ok=True)
+                    file_path.write_bytes(csv_data)
+                    
+                    page.snack_bar = ft.SnackBar(
+                        content=ft.Text(f"{len(machines)} {translator.get_text('assets.machine')} exportálva: {file_path}"),
+                        bgcolor=DesignSystem.SUCCESS,
+                    )
+                    page.snack_bar.open = True
+                    page.update()
+                except Exception as e:
+                    page.snack_bar = ft.SnackBar(
+                        content=ft.Text(f"Export hiba: {e}"),
+                        bgcolor=DesignSystem.ERROR,
+                    )
+                    page.snack_bar.open = True
+                    page.update()
+            
+            # Create wrapper functions to avoid lambda closure issues in PyInstaller
+            def handle_batch_delete(e):
+                on_batch_delete()
+            
+            def handle_batch_export(e):
+                on_batch_export()
+            
+            actions = [
+                {
+                    "label": translator.get_text("common.buttons.delete"),
+                    "icon": ft.Icons.DELETE,
+                    "on_click": handle_batch_delete,
+                    "color": DesignSystem.ERROR,
+                },
+                {
+                    "label": translator.get_text("common.buttons.export"),
+                    "icon": ft.Icons.DOWNLOAD,
+                    "on_click": handle_batch_export,
+                    "color": DesignSystem.BLUE_500,
+                },
+            ]
+            
+            return create_batch_actions_bar(
+                selected_count=selected_count,
+                actions=actions,
+                on_clear_selection=_clear_selection,
+                page=page,
+            )
+        
+        # Create batch actions bar container
+        batch_actions_bar_container = ft.Container(
+            content=_create_batch_actions_bar_content(),
+            visible=False,
+        )
+        batch_actions_bar_ref["value"] = batch_actions_bar_container
+        
+        # Set up pagination controller callback
+        def on_page_change(page_num):
+            # page_num is 1-based from PaginationController
+            # Convert to 0-based for refresh_list
+            refresh_list(update_page=True, page_num=page_num - 1)
+            page.update()
+        
+        pagination_controller.on_page_change = on_page_change
+        
         refresh_list()
 
         # Create add button
@@ -2039,6 +2287,12 @@ class AssetsScreen:
                     other_parts_list.controls.remove(row_container)
                     dialog_page.update()
                 
+                # Create wrapper function to avoid lambda closure issues in PyInstaller
+                def create_remove_handler(row_container):
+                    def handle_remove(e):
+                        remove_part(row_container)
+                    return handle_remove
+                
                 row = ft.Container(
                     content=ft.Row([
                         part_name_field,
@@ -2047,7 +2301,7 @@ class AssetsScreen:
                             icon=ft.Icons.DELETE,
                             icon_color="#EF4444",
                             tooltip="Eltávolítás",
-                            on_click=lambda _: remove_part(row),
+                            on_click=create_remove_handler(row),
                         ),
                     ], spacing=8),
                     padding=4,
@@ -2055,10 +2309,14 @@ class AssetsScreen:
                 other_parts_list.controls.append(row)
                 dialog_page.update()
             
+            # Create wrapper function to avoid lambda closure issues in PyInstaller
+            def handle_add_other_part(e):
+                add_other_part()
+            
             add_other_part_btn = ft.ElevatedButton(
                 "+ Egyéb alkatrész hozzáadása",
                 icon=ft.Icons.ADD,
-                on_click=lambda _: add_other_part(),
+                on_click=handle_add_other_part,
                 bgcolor="#10B981",
                 color="#FFFFFF",
                 height=35,
@@ -2274,13 +2532,44 @@ class AssetsScreen:
             height=40,
         )
 
+        # Create pagination controls
+        pagination_controls = create_pagination_controls(
+            controller=pagination_controller,
+            show_page_numbers=True,
+            max_page_buttons=7,
+        )
+        
+        # Create items per page selector
+        items_per_page_selector = create_items_per_page_selector(
+            controller=pagination_controller,
+            options=[10, 25, 50, 100],
+        )
+        
+        # Wrap pagination controls in a container
+        pagination_row = ft.Row([
+            pagination_controls,
+            ft.Container(width=DesignSystem.SPACING_4),
+            items_per_page_selector,
+        ], alignment=ft.MainAxisAlignment.CENTER, spacing=DesignSystem.SPACING_2) if pagination_controller.total_pages > 1 else ft.Container()
+        
+        # Select all checkbox
+        select_all_checkbox = ft.Checkbox(
+            value=False,
+            on_change=lambda e: (_select_all() if e.control.value else _clear_selection()),
+            tooltip=translator.get_text("common.select_all") if hasattr(translator, 'get_text') else "Select All",
+        )
+        
         return ft.Column([
             ft.Row([
+                select_all_checkbox,
                 ft.Text(translator.get_text("assets.title"), size=18, weight=ft.FontWeight.BOLD),
                 ft.Container(expand=True),
                 service_records_btn,
                 ft.Container(width=10),
                 add_btn,
             ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
+            batch_actions_bar_container,
+            pagination_row,
             machines_list,
+            pagination_row,
         ], spacing=12, expand=True)
