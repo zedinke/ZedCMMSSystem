@@ -2147,6 +2147,20 @@ class WorksheetScreen:
             ),
         )
 
+        # Create wrapper function to avoid lambda closure issues in PyInstaller
+        def handle_close_worksheet(e):
+            close_worksheet()
+        
+        # Create wrapper functions for other buttons
+        def handle_download_pdf(e):
+            download_pdf()
+        
+        def handle_download_work_request(e):
+            download_work_request()
+        
+        def handle_back_to_list(e):
+            back_to_list()
+
         return ft.Column([
             header,
             ft.Container(height=16),
@@ -2154,10 +2168,6 @@ class WorksheetScreen:
             ft.Container(height=16),
             parts_section,
             ft.Container(height=16),
-            # Create wrapper function to avoid lambda closure issues in PyInstaller
-            def handle_close_worksheet(e):
-                close_worksheet()
-            
             ft.Row([
                 ft.ElevatedButton(
                     translator.get_text("worksheets.close_worksheet"),
