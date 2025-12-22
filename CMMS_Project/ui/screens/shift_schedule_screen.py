@@ -99,14 +99,15 @@ class ShiftScheduleScreen:
             weight=ft.FontWeight.BOLD,
             key="year_text",  # Add key for easy reference
         )
+        
+        # Create wrapper functions to avoid lambda closure issues in PyInstaller
+        def handle_prev_year(e):
+            self._change_year(-1)
+        
+        def handle_next_year(e):
+            self._change_year(1)
+        
         year_nav = ft.Row(
-            # Create wrapper functions to avoid lambda closure issues in PyInstaller
-            def handle_prev_year(e):
-                self._change_year(-1)
-            
-            def handle_next_year(e):
-                self._change_year(1)
-            
             controls=[
                 create_modern_button(
                     text="<",
