@@ -20,8 +20,16 @@ from ui.components.modern_components import (
     DesignSystem,
 )
 from datetime import datetime
+from pathlib import Path
 from ui.components.modern_card import create_tailwind_card
+from ui.components.pagination import PaginationController, create_pagination_controls, create_items_per_page_selector
+from ui.components.selectable_list import SelectableList
+from ui.components.batch_actions_bar import create_batch_actions_bar
+from services.export_service import ExportService
+from services.autosave_service import get_autosave_service
+from services.context_service import get_current_user_id
 import logging
+import threading
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +37,9 @@ logger = logging.getLogger(__name__)
 class ProductionLineScreen:
     def __init__(self, page: ft.Page):
         self.page = page
+        self.search_query = ""
+        self.selected_items = []  # For batch operations
+        self.pagination_controller = None
     
     def view(self, page: ft.Page):
         if not hasattr(self, 'page') or self.page is None:
@@ -67,10 +78,36 @@ class ProductionLineScreen:
             
             session = SessionLocal()
             try:
-                production_lines = asset_service.list_production_lines(session)
+                all_production_lines = asset_service.list_production_lines(session)
+                
+                # Apply search filter
+                filtered_lines = all_production_lines
+                if self.search_query:
+                    search_lower = self.search_query.lower()
+                    filtered_lines = [
+                        pl for pl in all_production_lines
+                        if search_lower in (pl.name or "").lower()
+                        or search_lower in (pl.description or "").lower()
+                    ]
+                
+                # Initialize pagination controller
+                if self.pagination_controller is None:
+                    self.pagination_controller = PaginationController(
+                        total_items=len(filtered_lines),
+                        items_per_page=20,
+                        on_page_change=lambda page_num: refresh_production_lines_list()
+                    )
+                else:
+                    self.pagination_controller.update_total_items(len(filtered_lines))
+                
+                # Get items for current page
+                start_idx = (self.pagination_controller.current_page - 1) * self.pagination_controller.items_per_page
+                end_idx = start_idx + self.pagination_controller.items_per_page
+                production_lines = filtered_lines[start_idx:end_idx]
+                
                 production_lines_list.controls.clear()
                 
-                if not production_lines:
+                if not production_lines and len(filtered_lines) == 0:
                     production_lines_list.controls.append(
                         ft.Container(
                             content=ft.Text(
@@ -1769,6 +1806,91 @@ class ProductionLineScreen:
             
             print("[PRODUCTION_LINE] All form fields created successfully")
             
+            # Initialize autosave service
+            autosave_service = get_autosave_service()
+            user_id = get_current_user_id()
+            autosave_timer_ref = {"value": None}
+            autosave_enabled = True
+            
+            # Load draft if exists (for create, entity_id is None)
+            if user_id:
+                draft = autosave_service.load_draft("production_line", user_id, entity_id=None)
+                if draft and draft.get("form_data"):
+                    form_data = draft.get("form_data", {})
+                    if "name" in form_data and form_data["name"]:
+                        name_field.value = form_data["name"]
+                    if "code" in form_data and form_data["code"]:
+                        code_field.value = form_data["code"]
+                    if "description" in form_data and form_data["description"]:
+                        description_field.value = form_data["description"]
+                    if "location" in form_data and form_data["location"]:
+                        location_field.value = form_data["location"]
+                    if "status" in form_data and form_data["status"]:
+                        status_field.value = form_data["status"]
+                    if "capacity" in form_data and form_data["capacity"]:
+                        capacity_field.value = form_data["capacity"]
+                    if "responsible_person" in form_data and form_data["responsible_person"]:
+                        responsible_person_field.value = form_data["responsible_person"]
+                    if "commission_date" in form_data and form_data["commission_date"]:
+                        commission_date_field.value = form_data["commission_date"]
+                    if "notes" in form_data and form_data["notes"]:
+                        notes_field.value = form_data["notes"]
+            
+            # Auto-save function
+            def save_draft():
+                """Save current form state as draft"""
+                if not autosave_enabled or not user_id:
+                    return
+                
+                try:
+                    form_data = {
+                        "name": name_field.value or "",
+                        "code": code_field.value or "",
+                        "description": description_field.value or "",
+                        "location": location_field.value or "",
+                        "status": status_field.value or "Active",
+                        "capacity": capacity_field.value or "",
+                        "responsible_person": responsible_person_field.value or "",
+                        "commission_date": commission_date_field.value or "",
+                        "notes": notes_field.value or "",
+                    }
+                    
+                    autosave_service.save_draft(
+                        entity_type="production_line",
+                        form_data=form_data,
+                        user_id=user_id,
+                        entity_id=None,  # None for create
+                    )
+                    logger.debug("Auto-saved draft for production line (create)")
+                except Exception as e:
+                    logger.error(f"Error auto-saving draft: {e}")
+            
+            # Auto-save on field changes
+            def on_field_change(e):
+                """Handle field change and trigger auto-save"""
+                if autosave_timer_ref["value"]:
+                    autosave_timer_ref["value"].cancel()
+                
+                # Schedule auto-save after 2 seconds of inactivity
+                def delayed_save():
+                    save_draft()
+                
+                timer = threading.Timer(2.0, delayed_save)
+                timer.daemon = True
+                autosave_timer_ref["value"] = timer
+                timer.start()
+            
+            # Attach change handlers
+            name_field.on_change = on_field_change
+            code_field.on_change = on_field_change
+            description_field.on_change = on_field_change
+            location_field.on_change = on_field_change
+            status_field.on_change = on_field_change
+            capacity_field.on_change = on_field_change
+            responsible_person_field.on_change = on_field_change
+            commission_date_field.on_change = on_field_change
+            notes_field.on_change = on_field_change
+            
             # Create dialog first (will be referenced in submit_create)
             print("[PRODUCTION_LINE] Creating AlertDialog object (before submit_create)...")
             dialog = ft.AlertDialog(
@@ -1868,6 +1990,13 @@ class ProductionLineScreen:
                     )
                     print("[PRODUCTION_LINE] Production line created successfully")
                     
+                    # Clear draft after successful creation
+                    if user_id:
+                        try:
+                            autosave_service.clear_draft("production_line", user_id, entity_id=None)
+                        except Exception as e:
+                            logger.error(f"Error clearing draft: {e}")
+                    
                     # Close dialog with fallback
                     print("[PRODUCTION_LINE] Attempting to close dialog...")
                     try:
@@ -1931,43 +2060,28 @@ class ProductionLineScreen:
             print("[PRODUCTION_LINE] ====== Attempting to open dialog ======")
             print(f"[PRODUCTION_LINE] dialog_page: {dialog_page}")
             print(f"[PRODUCTION_LINE] dialog_page type: {type(dialog_page)}")
-            print(f"[PRODUCTION_LINE] hasattr(dialog_page, 'open'): {hasattr(dialog_page, 'open')}")
-            print(f"[PRODUCTION_LINE] hasattr(dialog_page, 'dialog'): {hasattr(dialog_page, 'dialog')}")
             print(f"[PRODUCTION_LINE] dialog: {dialog}")
             print(f"[PRODUCTION_LINE] dialog type: {type(dialog)}")
-            print(f"[PRODUCTION_LINE] dialog.open (before): {getattr(dialog, 'open', 'NO_OPEN_ATTR')}")
             
+            # Use the same method as other screens (vacation_screen, etc.)
             try:
-                print("[PRODUCTION_LINE] Calling dialog_page.open(dialog)...")
-                dialog_page.open(dialog)
-                print(f"[PRODUCTION_LINE] dialog_page.open() succeeded")
-                print(f"[PRODUCTION_LINE] dialog.open (after): {getattr(dialog, 'open', 'NO_OPEN_ATTR')}")
-            except AttributeError as ae:
-                print(f"[PRODUCTION_LINE] AttributeError: {ae}")
-                import traceback
-                traceback.print_exc()
-                print("[PRODUCTION_LINE] Using fallback: dialog_page.dialog = dialog, dialog.open = True")
-                try:
-                    dialog_page.dialog = dialog
-                    dialog.open = True
-                    dialog_page.update()
-                    print(f"[PRODUCTION_LINE] Fallback succeeded, dialog.open={dialog.open}")
-                except Exception as fallback_exc:
-                    print(f"[PRODUCTION_LINE] Fallback also failed: {fallback_exc}")
-                    import traceback
-                    traceback.print_exc()
+                dialog_page.dialog = dialog
+                dialog_page.dialog.open = True
+                dialog_page.update()
+                print(f"[PRODUCTION_LINE] Dialog opened successfully using page.dialog method")
             except Exception as open_exc:
-                print(f"[PRODUCTION_LINE] Exception opening dialog: {open_exc}")
+                print(f"[PRODUCTION_LINE] ERROR opening dialog: {open_exc}")
                 import traceback
                 traceback.print_exc()
-                print("[PRODUCTION_LINE] Using fallback: dialog_page.dialog = dialog, dialog.open = True")
+                # Try alternative method
                 try:
-                    dialog_page.dialog = dialog
-                    dialog.open = True
-                    dialog_page.update()
-                    print(f"[PRODUCTION_LINE] Fallback succeeded, dialog.open={dialog.open}")
-                except Exception as fallback_exc:
-                    print(f"[PRODUCTION_LINE] Fallback also failed: {fallback_exc}")
+                    if hasattr(dialog_page, 'open'):
+                        dialog_page.open(dialog)
+                        print(f"[PRODUCTION_LINE] Dialog opened using page.open() method")
+                    else:
+                        raise Exception("No dialog opening method available")
+                except Exception as alt_exc:
+                    print(f"[PRODUCTION_LINE] Alternative method also failed: {alt_exc}")
                     import traceback
                     traceback.print_exc()
             print("[PRODUCTION_LINE] ====== Finished opening dialog ======")
@@ -2046,6 +2160,91 @@ class ProductionLineScreen:
                     max_lines=4,
                 )
                 
+                # Initialize autosave service
+                autosave_service = get_autosave_service()
+                user_id = get_current_user_id()
+                autosave_timer_ref = {"value": None}
+                autosave_enabled = True
+                
+                # Load draft if exists
+                if user_id and production_line_id:
+                    draft = autosave_service.load_draft("production_line", user_id, entity_id=production_line_id)
+                    if draft and draft.get("form_data"):
+                        form_data = draft.get("form_data", {})
+                        if "name" in form_data and form_data["name"]:
+                            name_field.value = form_data["name"]
+                        if "code" in form_data and form_data["code"]:
+                            code_field.value = form_data["code"]
+                        if "description" in form_data and form_data["description"]:
+                            description_field.value = form_data["description"]
+                        if "location" in form_data and form_data["location"]:
+                            location_field.value = form_data["location"]
+                        if "status" in form_data and form_data["status"]:
+                            status_field.value = form_data["status"]
+                        if "capacity" in form_data and form_data["capacity"]:
+                            capacity_field.value = form_data["capacity"]
+                        if "responsible_person" in form_data and form_data["responsible_person"]:
+                            responsible_person_field.value = form_data["responsible_person"]
+                        if "commission_date" in form_data and form_data["commission_date"]:
+                            commission_date_field.value = form_data["commission_date"]
+                        if "notes" in form_data and form_data["notes"]:
+                            notes_field.value = form_data["notes"]
+                
+                # Auto-save function
+                def save_draft():
+                    """Save current form state as draft"""
+                    if not autosave_enabled or not user_id or not production_line_id:
+                        return
+                    
+                    try:
+                        form_data = {
+                            "name": name_field.value or "",
+                            "code": code_field.value or "",
+                            "description": description_field.value or "",
+                            "location": location_field.value or "",
+                            "status": status_field.value or "Active",
+                            "capacity": capacity_field.value or "",
+                            "responsible_person": responsible_person_field.value or "",
+                            "commission_date": commission_date_field.value or "",
+                            "notes": notes_field.value or "",
+                        }
+                        
+                        autosave_service.save_draft(
+                            entity_type="production_line",
+                            form_data=form_data,
+                            user_id=user_id,
+                            entity_id=production_line_id,
+                        )
+                        logger.debug(f"Auto-saved draft for production line {production_line_id}")
+                    except Exception as e:
+                        logger.error(f"Error auto-saving draft: {e}")
+                
+                # Auto-save on field changes
+                def on_field_change(e):
+                    """Handle field change and trigger auto-save"""
+                    if autosave_timer_ref["value"]:
+                        autosave_timer_ref["value"].cancel()
+                    
+                    # Schedule auto-save after 2 seconds of inactivity
+                    def delayed_save():
+                        save_draft()
+                    
+                    timer = threading.Timer(2.0, delayed_save)
+                    timer.daemon = True
+                    autosave_timer_ref["value"] = timer
+                    timer.start()
+                
+                # Attach change handlers
+                name_field.on_change = on_field_change
+                code_field.on_change = on_field_change
+                description_field.on_change = on_field_change
+                location_field.on_change = on_field_change
+                status_field.on_change = on_field_change
+                capacity_field.on_change = on_field_change
+                responsible_person_field.on_change = on_field_change
+                commission_date_field.on_change = on_field_change
+                notes_field.on_change = on_field_change
+                
                 def submit_edit(e):
                     try:
                         if not name_field.value:
@@ -2071,6 +2270,13 @@ class ProductionLineScreen:
                             commission_date=commission_date,
                             notes=notes_field.value if notes_field.value else None,
                         )
+                        
+                        # Clear draft after successful update
+                        if user_id:
+                            try:
+                                autosave_service.clear_draft("production_line", user_id, entity_id=production_line_id)
+                            except Exception as e:
+                                logger.error(f"Error clearing draft: {e}")
                         
                         # Close dialog with fallback
                         try:
@@ -2268,6 +2474,148 @@ class ProductionLineScreen:
         refresh_production_lines_list()
         
         # Build layout
+        # Search field
+        search_field = create_modern_text_field(
+            label=translator.get_text("common.search") if hasattr(translator, 'get_text') else "Keresés / Search",
+            hint_text=translator.get_text("common.search_hint") if hasattr(translator, 'get_text') else "Keresés...",
+            value=self.search_query,
+            on_change=lambda e: on_search_change(e),
+            width=300,
+        )
+        
+        def on_search_change(e):
+            """Handle search field change"""
+            self.search_query = e.control.value or ""
+            # Reset pagination to first page when search changes
+            if self.pagination_controller:
+                self.pagination_controller.go_to_page(1)
+            refresh_production_lines_list()
+        
+        def handle_export_csv(e):
+            """Handle CSV export"""
+            try:
+                session = SessionLocal()
+                try:
+                    all_lines = asset_service.list_production_lines(session)
+                    
+                    # Apply search filter
+                    if self.search_query:
+                        search_lower = self.search_query.lower()
+                        all_lines = [
+                            pl for pl in all_lines
+                            if search_lower in (pl.name or "").lower()
+                            or search_lower in (pl.description or "").lower()
+                        ]
+                    
+                    export_data = []
+                    headers = [
+                        translator.get_text("production_line.name") if hasattr(translator, 'get_text') else "Name",
+                        translator.get_text("production_line.description") if hasattr(translator, 'get_text') else "Description",
+                        translator.get_text("production_line.location") if hasattr(translator, 'get_text') else "Location",
+                    ]
+                    
+                    for pl in all_lines:
+                        export_data.append([
+                            pl.name or "",
+                            pl.description or "",
+                            pl.location or "",
+                        ])
+                    
+                    def on_save_result(e: ft.FilePickerResultEvent):
+                        if e.path:
+                            save_path = Path(e.path).with_suffix('.csv')
+                            csv_data = ExportService.export_table_to_csv(
+                                table_data=export_data,
+                                headers=headers
+                            )
+                            with open(save_path, 'wb') as f:
+                                f.write(csv_data)
+                            page.snack_bar = ft.SnackBar(
+                                content=ft.Text(translator.get_text("common.export_success") if hasattr(translator, 'get_text') else "Export successful"),
+                                bgcolor=DesignSystem.SUCCESS,
+                            )
+                            page.snack_bar.open = True
+                            page.update()
+                    
+                    file_picker = ft.FilePicker(on_result=on_save_result)
+                    page.overlay.append(file_picker)
+                    file_picker.save_file(
+                        dialog_title=translator.get_text("common.export_csv") if hasattr(translator, 'get_text') else "Export CSV",
+                        file_name=f"production_lines_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                        file_type=ft.FilePickerFileType.CUSTOM,
+                        allowed_extensions=["csv"],
+                    )
+                finally:
+                    session.close()
+            except Exception as ex:
+                logger.error(f"Error exporting CSV: {ex}")
+                page.snack_bar = ft.SnackBar(
+                    content=ft.Text(f"{translator.get_text('common.error')}: {str(ex)}"),
+                    bgcolor=DesignSystem.ERROR,
+                )
+                page.snack_bar.open = True
+                page.update()
+        
+        def handle_export_excel(e):
+            """Handle Excel export"""
+            try:
+                session = SessionLocal()
+                try:
+                    all_lines = asset_service.list_production_lines(session)
+                    
+                    # Apply search filter
+                    if self.search_query:
+                        search_lower = self.search_query.lower()
+                        all_lines = [
+                            pl for pl in all_lines
+                            if search_lower in (pl.name or "").lower()
+                            or search_lower in (pl.description or "").lower()
+                        ]
+                    
+                    export_data = []
+                    for pl in all_lines:
+                        export_data.append({
+                            translator.get_text("production_line.name") if hasattr(translator, 'get_text') else "Name": pl.name or "",
+                            translator.get_text("production_line.description") if hasattr(translator, 'get_text') else "Description": pl.description or "",
+                            translator.get_text("production_line.location") if hasattr(translator, 'get_text') else "Location": pl.location or "",
+                        })
+                    
+                    def on_save_result(e: ft.FilePickerResultEvent):
+                        if e.path:
+                            save_path = Path(e.path).with_suffix('.xlsx')
+                            excel_data = ExportService.export_to_excel(
+                                data=export_data,
+                                filename=save_path.name,
+                                sheet_name="Production Lines"
+                            )
+                            with open(save_path, 'wb') as f:
+                                f.write(excel_data)
+                            page.snack_bar = ft.SnackBar(
+                                content=ft.Text(translator.get_text("common.export_success") if hasattr(translator, 'get_text') else "Export successful"),
+                                bgcolor=DesignSystem.SUCCESS,
+                            )
+                            page.snack_bar.open = True
+                            page.update()
+                    
+                    file_picker = ft.FilePicker(on_result=on_save_result)
+                    page.overlay.append(file_picker)
+                    file_picker.save_file(
+                        dialog_title=translator.get_text("common.export_excel") if hasattr(translator, 'get_text') else "Export Excel",
+                        file_name=f"production_lines_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                        file_type=ft.FilePickerFileType.CUSTOM,
+                        allowed_extensions=["xlsx"],
+                    )
+                finally:
+                    session.close()
+            except Exception as ex:
+                logger.error(f"Error exporting Excel: {ex}")
+                page.snack_bar = ft.SnackBar(
+                    content=ft.Text(f"{translator.get_text('common.error')}: {str(ex)}"),
+                    bgcolor=DesignSystem.ERROR,
+                )
+                page.snack_bar.open = True
+                page.update()
+        
         return ft.Row([
             # Left side: Production lines list
             ft.Container(
@@ -2282,10 +2630,27 @@ class ProductionLineScreen:
                         create_modern_button(
                             text=translator.get_text("production_line.create") if translator.get_text("production_line.create") != "production_line.create" else "Új termelési sor",
                             icon=ft.Icons.ADD,
-                            on_click=lambda e: (print(f"[PRODUCTION_LINE] ====== BUTTON CLICKED! ======"), print(f"[PRODUCTION_LINE] Event: {e}, type: {type(e)}"), print(f"[PRODUCTION_LINE] Event control: {getattr(e, 'control', None)}"), open_create_dialog())[-1],
+                            on_click=lambda e: open_create_dialog(),
                             variant="blue",
                         ),
                     ], spacing=DesignSystem.SPACING_3, alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+                    ft.Row([
+                        search_field,
+                        create_modern_button(
+                            text=translator.get_text("common.export_csv") if hasattr(translator, 'get_text') else "CSV Export",
+                            icon=ft.Icons.FILE_DOWNLOAD,
+                            on_click=handle_export_csv,
+                            bgcolor=DesignSystem.SUCCESS,
+                            color=DesignSystem.WHITE,
+                        ),
+                        create_modern_button(
+                            text=translator.get_text("common.export_excel") if hasattr(translator, 'get_text') else "Excel Export",
+                            icon=ft.Icons.FILE_DOWNLOAD,
+                            on_click=handle_export_excel,
+                            bgcolor=DesignSystem.SUCCESS,
+                            color=DesignSystem.WHITE,
+                        ),
+                    ], spacing=DesignSystem.SPACING_4, wrap=True),
                     production_lines_list,
                 ], spacing=DesignSystem.SPACING_4, expand=True),
                 width=400,
