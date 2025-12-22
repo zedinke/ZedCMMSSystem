@@ -12,8 +12,22 @@ set "PROJECT_ROOT=%SCRIPT_DIR:~0,-1%"
 REM Virtual environment in CMMS_Project\.venv
 set "VENV_DIR=%PROJECT_ROOT%\.venv"
 
+REM Verify PROJECT_ROOT is set correctly
+if "%PROJECT_ROOT%"=="" (
+    echo ERROR: Failed to determine project root directory!
+    pause
+    exit /b 1
+)
+
 REM Navigate to project folder (CMMS_Project)
 cd /d "%PROJECT_ROOT%"
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: Failed to navigate to project directory: %PROJECT_ROOT%
+    echo.
+    echo Please check that the directory exists and you have access to it.
+    pause
+    exit /b 1
+)
 
 REM Check if Python is installed
 where python >nul 2>&1
@@ -76,6 +90,13 @@ if %ERRORLEVEL% NEQ 0 (
     
     REM Install requirements
     echo Installing requirements from requirements.txt...
+    if not exist "requirements.txt" (
+        echo ERROR: requirements.txt not found in: %PROJECT_ROOT%
+        echo.
+        echo Please make sure you copied the entire CMMS_Project folder.
+        pause
+        exit /b 1
+    )
     "%VENV_DIR%\Scripts\python.exe" -m pip install -r requirements.txt --quiet
     
     if %ERRORLEVEL% NEQ 0 (
@@ -114,6 +135,13 @@ echo.
 
 REM Start the app using the venv Python
 REM The app will automatically start the FastAPI server in background
+if not exist "main.py" (
+    echo ERROR: main.py not found in: %PROJECT_ROOT%
+    echo.
+    echo Please make sure you copied the entire CMMS_Project folder.
+    pause
+    exit /b 1
+)
 set PYTHONIOENCODING=utf-8
 "%VENV_DIR%\Scripts\python.exe" main.py
 
