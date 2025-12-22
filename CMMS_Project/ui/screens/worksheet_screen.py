@@ -2180,7 +2180,7 @@ class WorksheetScreen:
                 ft.ElevatedButton(
                     translator.get_text("worksheets.export_pdf"),
                     icon=ft.Icons.DOWNLOAD if hasattr(ft.Icons, 'DOWNLOAD') else ft.Icons.FILE_DOWNLOAD,
-                    on_click=lambda e: download_pdf(),
+                    on_click=handle_download_pdf,
                     bgcolor="#6366F1",
                     color="#FFFFFF",
                     height=44,
@@ -2188,7 +2188,7 @@ class WorksheetScreen:
                 ft.ElevatedButton(
                     translator.get_text("preventive_maintenance.work_request"),
                     icon=ft.Icons.DESCRIPTION if hasattr(ft.Icons, 'DESCRIPTION') else ft.Icons.ASSIGNMENT,
-                    on_click=lambda e: download_work_request(),
+                    on_click=handle_download_work_request,
                     bgcolor="#F59E0B",
                     color="#FFFFFF",
                     height=44,
@@ -2197,7 +2197,7 @@ class WorksheetScreen:
                 ft.Column(expand=True),
                 ft.TextButton(
                     translator.get_text("common.buttons.cancel"),
-                    on_click=lambda e: back_to_list(),
+                    on_click=handle_back_to_list,
                 ),
             ]),
         ], spacing=0, expand=True, scroll=ft.ScrollMode.AUTO)
