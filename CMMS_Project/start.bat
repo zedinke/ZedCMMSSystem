@@ -7,10 +7,10 @@ REM ========================================
 
 REM Get the directory where this batch file is located (includes trailing backslash)
 set "SCRIPT_DIR=%~dp0"
-REM This batch file is in CMMS_Project directory, so PROJECT_ROOT is the parent
-set "PROJECT_ROOT=%SCRIPT_DIR%"
+REM Remove trailing backslash for cleaner path handling
+set "PROJECT_ROOT=%SCRIPT_DIR:~0,-1%"
 REM Virtual environment in CMMS_Project\.venv
-set "VENV_DIR=%PROJECT_ROOT%.venv"
+set "VENV_DIR=%PROJECT_ROOT%\.venv"
 
 REM Navigate to project folder (CMMS_Project)
 cd /d "%PROJECT_ROOT%"
