@@ -784,16 +784,16 @@ class VacationScreen:
         # Get calendar data
         calendar_data = get_vacation_calendar(self.current_year)
         
+        # Create wrapper functions to avoid lambda closure issues in PyInstaller
+        def handle_prev_year(e):
+            self._change_year(-1)
+        
+        def handle_next_year(e):
+            self._change_year(1)
+        
         # Year navigation
         year_nav = ft.Row(
             controls=[
-                # Create wrapper functions to avoid lambda closure issues in PyInstaller
-                def handle_prev_year(e):
-                    self._change_year(-1)
-                
-                def handle_next_year(e):
-                    self._change_year(1)
-                
                 create_modern_button(
                     text="◀",
                     icon=None,
