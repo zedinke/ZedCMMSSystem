@@ -130,6 +130,24 @@ class WorksheetScreen:
         worksheet_scrapping_docs = [doc for doc in scrapping_docs if doc.worksheet_id == ws.id]
         has_scrapping_docs = len(worksheet_scrapping_docs) > 0
         
+        # Create wrapper functions to avoid lambda closure issues in PyInstaller
+        def create_worksheet_handlers(worksheet, work_req_path, scrapping_docs):
+            def handle_edit(e):
+                self._on_worksheet_edit(worksheet, page)
+            
+            def handle_pdf_download(e):
+                self._on_pdf_download(worksheet, page)
+            
+            def handle_work_request_download(e):
+                self._on_work_request_download(worksheet, page, work_req_path)
+            
+            def handle_scrapping_download(e):
+                self._on_scrapping_download(worksheet, page, scrapping_docs)
+            
+            return handle_edit, handle_pdf_download, handle_work_request_download, handle_scrapping_download
+        
+        handle_edit, handle_pdf_download, handle_work_request_download, handle_scrapping_download = create_worksheet_handlers(ws, work_request_path, worksheet_scrapping_docs)
+        
         # Parts info - detailed list with quantities
         # Ensure parts are loaded
         parts_list = []
@@ -330,24 +348,6 @@ class WorksheetScreen:
                 ft.Container(height=16) if ws.notes else ft.Container(height=0),
                 create_modern_divider(),
                 ft.Container(height=16),
-                # Create wrapper functions to avoid lambda closure issues in PyInstaller
-                def create_worksheet_handlers(worksheet, work_req_path, scrapping_docs):
-                    def handle_edit(e):
-                        self._on_worksheet_edit(worksheet, page)
-                    
-                    def handle_pdf_download(e):
-                        self._on_pdf_download(worksheet, page)
-                    
-                    def handle_work_request_download(e):
-                        self._on_work_request_download(worksheet, page, work_req_path)
-                    
-                    def handle_scrapping_download(e):
-                        self._on_scrapping_download(worksheet, page, scrapping_docs)
-                    
-                    return handle_edit, handle_pdf_download, handle_work_request_download, handle_scrapping_download
-                
-                handle_edit, handle_pdf_download, handle_work_request_download, handle_scrapping_download = create_worksheet_handlers(ws, work_request_path, worksheet_scrapping_docs)
-                
                 ft.Row([
                     ft.ElevatedButton(
                         translator.get_text("common.buttons.edit"),
