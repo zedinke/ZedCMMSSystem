@@ -5,13 +5,15 @@ REM CMMS Desktop Application Launcher
 REM Portable version - works on any machine
 REM ========================================
 
-REM Get the directory where this batch file is located
+REM Get the directory where this batch file is located (includes trailing backslash)
 set "SCRIPT_DIR=%~dp0"
-set "PROJECT_ROOT=%SCRIPT_DIR%.."
-set "VENV_DIR=%PROJECT_ROOT%\.venv"
+REM This batch file is in CMMS_Project directory, so PROJECT_ROOT is the parent
+set "PROJECT_ROOT=%SCRIPT_DIR%"
+REM Virtual environment in CMMS_Project\.venv
+set "VENV_DIR=%PROJECT_ROOT%.venv"
 
-REM Navigate to project folder
-cd /d "%SCRIPT_DIR%"
+REM Navigate to project folder (CMMS_Project)
+cd /d "%PROJECT_ROOT%"
 
 REM Check if Python is installed
 where python >nul 2>&1
