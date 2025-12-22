@@ -1657,6 +1657,16 @@ class ProductionLineScreen:
             print("[PRODUCTION_LINE] ========================================")
             print("[PRODUCTION_LINE] open_create_dialog() called")
             logger.debug("open_create_dialog() called")
+        
+        def handle_create_button_click(e):
+            """Wrapper function for create button click to avoid closure issues in PyInstaller"""
+            print(f"[PRODUCTION_LINE] handle_create_button_click called, event: {e}")
+            try:
+                open_create_dialog()
+            except Exception as ex:
+                print(f"[PRODUCTION_LINE] ERROR in handle_create_button_click: {ex}")
+                import traceback
+                traceback.print_exc()
             try:
                 dialog_page = self.page if hasattr(self, 'page') and self.page else page
                 print(f"[PRODUCTION_LINE] dialog_page: {dialog_page}, type: {type(dialog_page)}")
@@ -2630,7 +2640,7 @@ class ProductionLineScreen:
                         create_modern_button(
                             text=translator.get_text("production_line.create") if translator.get_text("production_line.create") != "production_line.create" else "Új termelési sor",
                             icon=ft.Icons.ADD,
-                            on_click=lambda e: open_create_dialog(),
+                            on_click=handle_create_button_click,
                             variant="blue",
                         ),
                     ], spacing=DesignSystem.SPACING_3, alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
