@@ -590,6 +590,12 @@ class ShiftScheduleScreen:
             self._show_day_details(day, users_info)
         return handle_click
     
+    def _create_shift_override_handler(self, day: date, user_id: int):
+        """Create a handler function for shift override click to avoid lambda closure issues"""
+        def handle_click(e):
+            self._open_shift_override_dialog(day, user_id)
+        return handle_click
+    
     def _show_day_details(self, day: date, users_info: List[Dict]):
         """Show details dialog for a specific day"""
         from services.user_service import get_user
